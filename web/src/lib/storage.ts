@@ -10,6 +10,7 @@ export const STORAGE_KEYS = {
   recent: 'wvt.recent',
   ui: 'wvt.ui',
   draft: 'wvt.draft',
+  draftByTransaction: 'wvt.draftByTx',
 } as const
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS]
@@ -59,6 +60,8 @@ export type UiPrefs = {
   lang?: 'de' | 'en'
   lastMode?: 'MOTO' | 'LINK'
   motoEmbed?: 'iframe' | 'popup'
+  /** Next sequence number for merchant references (per prefix). */
+  referenceCounters?: Record<string, number>
 }
 
 export function readUiPrefs(): UiPrefs {
