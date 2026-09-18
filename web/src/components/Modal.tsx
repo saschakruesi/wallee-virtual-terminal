@@ -25,7 +25,8 @@ export function Modal({ open, title, onClose, children, footer }: ModalProps) {
       if (typeof el.showModal === 'function') el.showModal()
       else el.setAttribute('open', '')
     } else if (!open && el.open) {
-      el.close()
+      if (typeof el.close === 'function') el.close()
+      else el.removeAttribute('open')
     }
   }, [open])
 
