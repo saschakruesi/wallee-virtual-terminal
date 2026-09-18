@@ -5,6 +5,7 @@ import { ConfigProvider, RequireConfig } from './ConfigProvider'
 import { Layout } from './Layout'
 import { SetupPage } from '@/features/setup/SetupPage'
 import { NewTransactionPage } from '@/features/moto/NewTransactionPage'
+import { MotoPage } from '@/features/moto/MotoPage'
 import { HistoryPage } from '@/features/history/HistoryPage'
 import { CustomersPage } from '@/features/customers/CustomersPage'
 import { ProductsPage } from '@/features/products/ProductsPage'
@@ -24,7 +25,7 @@ export function App() {
                 <Route path="index.html" element={<Navigate to="/" replace />} />
                 <Route element={<RequireConfig />}>
                   <Route index element={<NewTransactionPage />} />
-                  <Route path="moto/:id" element={<NewTransactionPage />} />
+                  <Route path="moto/:id" element={<MotoPage />} />
                   <Route path="link/:id" element={<NewTransactionPage />} />
                   <Route path="history" element={<HistoryPage />} />
                   <Route path="customers" element={<CustomersPage />} />
