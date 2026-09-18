@@ -62,6 +62,10 @@ export type UiPrefs = {
   motoEmbed?: 'iframe' | 'popup'
   /** Next sequence number for merchant references (per prefix). */
   referenceCounters?: Record<string, number>
+  /** Which search the history screen uses (metaData, or merchantReference as fallback). */
+  historyQueryMode?: 'metaData' | 'reference'
+  /** Open payment links counted at the last history load, for the navigation badge. */
+  openLinkCount?: number
 }
 
 export function readUiPrefs(): UiPrefs {
