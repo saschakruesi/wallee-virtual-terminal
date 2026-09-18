@@ -14,6 +14,7 @@ import {
   writeJson,
 } from '@/lib/storage'
 import type { AppConfig } from '@/lib/storage'
+import type { Customer, PostalAddress } from '@/api/customers'
 
 export type Mode = 'MOTO' | 'LINK'
 
@@ -30,9 +31,14 @@ export type LineItemDraft = {
 }
 
 export type CustomerDraft = {
-  /** Phase 5 adds `wallee` with a customer id; for now only ad-hoc billing data. */
-  mode: 'none'
+  /** `wallee`: a customer selected from wallee (customerId = wallee id); `none`: ad-hoc billing data only. */
+  mode: 'none' | 'wallee'
+  /** wallee internal customer id (sent as `customerId` on the transaction). */
   customerId?: string
+  /** The merchant's own customer number, for display. */
+  customerNumber?: string
+  /** True once the employee chose "without customer profile" (keeps the form open). */
+  adhoc?: boolean
   emailAddress: string
   givenName: string
   familyName: string
@@ -79,6 +85,23 @@ export function emptyCustomer(): CustomerDraft {
     postcode: '',
     city: '',
     country: 'CH',
+  }
+}
+
+/** Builds the draft customer from a wallee customer and (optionally) its billing address. */
+export function customerFromWallee(customer: Customer, address?: PostalAddress): CustomerDraft {
+  return {
+    mode: 'wallee',
+    customerId: String(customer.id),
+    customerNumber: customer.customerId,
+    emailAddress: address?.emailAddress ?? customer.emailAddress ?? '',
+    givenName: address?.givenName ?? customer.givenName ?? '',
+    familyName: address?.familyName ?? customer.familyName ?? '',
+    organizationName: address?.organizationName ?? '',
+    street: address?.street ?? '',
+    postcode: address?.postcode ?? '',
+    city: address?.city ?? '',
+    country: address?.country ?? 'CH',
   }
 }
 

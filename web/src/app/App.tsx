@@ -9,6 +9,8 @@ import { MotoPage } from '@/features/moto/MotoPage'
 import { LinkPage } from '@/features/paymentlink/LinkPage'
 import { HistoryPage } from '@/features/history/HistoryPage'
 import { CustomersPage } from '@/features/customers/CustomersPage'
+import { CustomerNewPage } from '@/features/customers/CustomerNewPage'
+import { CustomerDetailPage } from '@/features/customers/CustomerDetailPage'
 import { ProductsPage } from '@/features/products/ProductsPage'
 import { StyleguidePage } from '@/features/styleguide/StyleguidePage'
 import { NotFoundPage } from './NotFoundPage'
@@ -30,8 +32,8 @@ export function App() {
                   <Route path="link/:id" element={<LinkPage />} />
                   <Route path="history" element={<HistoryPage />} />
                   <Route path="customers" element={<CustomersPage />} />
-                  <Route path="customers/new" element={<CustomersPage />} />
-                  <Route path="customers/:id" element={<CustomersPage />} />
+                  <Route path="customers/new" element={<CustomerNewPage />} />
+                  <Route path="customers/:id" element={<CustomerDetailPage />} />
                   <Route path="products" element={<ProductsPage />} />
                   <Route path="*" element={<NotFoundPage />} />
                 </Route>

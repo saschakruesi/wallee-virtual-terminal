@@ -52,6 +52,7 @@ describe('MOTO wizard', () => {
     await user.click(screen.getByRole('button', { name: /Telefon \/ MOTO/ }))
 
     // Step 1: optional customer data
+    await user.click(screen.getByRole('button', { name: 'Ohne Kundenprofil weiter' }))
     await user.type(screen.getByLabelText('E-Mail'), 'gast@example.com')
     await user.type(screen.getByLabelText('Nachname'), 'Muster')
     await user.click(screen.getByRole('button', { name: 'Weiter' }))

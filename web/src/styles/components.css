@@ -996,3 +996,51 @@ button.stepper__step:hover .stepper__circle {
     text-align: left;
   }
 }
+
+/* ---------- Customer search & card ---------- */
+.result-list-ul {
+  border: 1px solid var(--w-line);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.result-list-ul li + li {
+  border-top: 1px solid var(--w-line);
+}
+.result-row {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--s-2);
+  padding: 10px 12px;
+  color: var(--w-text);
+}
+.result-row:hover,
+.result-row.is-active {
+  background: var(--w-turquoise-20);
+}
+.result-row:focus-visible {
+  box-shadow: inset var(--focus);
+  border-radius: 0;
+}
+.result-row__name {
+  font-weight: 500;
+  color: var(--w-black);
+}
+.result-row__meta {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.customer-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--s-2);
+  border: 1px solid var(--w-line);
+  border-radius: var(--r-md);
+  padding: var(--s-2) var(--s-3);
+}
