@@ -1,0 +1,58 @@
+/* wallee design tokens — see docs/04-design-system.md */
+:root {
+  --w-turquoise: #11d9cc;
+  --w-turquoise-80: #41e1d6;
+  --w-turquoise-60: #58e3da;
+  --w-turquoise-40: #9cede7;
+  --w-turquoise-20: #cff7f4;
+  --w-turquoise-text: #0b8f87;
+  --w-turquoise-deep: #0e6b66;
+  --w-orange: #ff4d00;
+  --w-orange-soft: #ffe4d9;
+  --w-orange-text: #b33600;
+  --w-black: #000;
+  --w-text: #333;
+  --w-text-muted: #808080;
+  --w-line: #d9d9d9;
+  --w-grid: #e6e6e6;
+  --w-bg: #fff;
+  --w-bg-soft: #f7f7f7;
+  --w-badge-neutral: #f0f0f0;
+  --w-success: #0b8f87;
+  --w-error: #ff4d00;
+
+  --font: 'Roboto', Arial, Helvetica, sans-serif;
+  --fs-base: 15px;
+  --fs-small: 13px;
+  --fs-tiny: 12px;
+  --fs-section: 17px;
+  --fs-headline: 24px;
+  --fs-display: 32px;
+  --lh: 1.5;
+
+  --s-1: 8px;
+  --s-2: 16px;
+  --s-3: 24px;
+  --s-4: 32px;
+  --s-5: 40px;
+  --s-6: 48px;
+
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-pill: 12px;
+
+  --control-h: 44px;
+  --control-h-lg: 52px;
+  --header-h: 64px;
+  --content-max: 1120px;
+  --page-pad: var(--s-5);
+
+  --focus: 0 0 0 2px var(--w-turquoise);
+  --dur: 150ms;
+}
+
+@media (max-width: 900px) {
+  :root {
+    --page-pad: 20px;
+  }
+}
