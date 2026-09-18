@@ -1,0 +1,7 @@
+node_modules/
+web/dist/
+helper/dist/
+helper/wallee-virtual-terminal*
+dist/
+.env.local
+.DS_Store

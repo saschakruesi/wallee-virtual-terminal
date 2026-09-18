@@ -1,0 +1,122 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build binaries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Build frontend
+        working-directory: web
+        run: |
+          npm ci
+          VITE_APP_VERSION="${GITHUB_REF_NAME}" npm run build
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - name: Embed frontend
+        run: rm -rf helper/dist && cp -r web/dist helper/dist
+
+      - name: Cross-compile
+        working-directory: helper
+        env:
+          CGO_ENABLED: '0'
+        run: |
+          mkdir -p ../out
+          LD="-s -w -X main.version=${GITHUB_REF_NAME}"
+          GOOS=darwin  GOARCH=arm64 go build -ldflags "$LD" -o ../out/wallee-virtual-terminal-macos-apple-silicon .
+          GOOS=darwin  GOARCH=amd64 go build -ldflags "$LD" -o ../out/wallee-virtual-terminal-macos-intel .
+          GOOS=windows GOARCH=amd64 go build -ldflags "$LD" -o ../out/wallee-virtual-terminal-windows.exe .
+          cd ../out && sha256sum * > SHA256SUMS.txt
+
+      # --- Optional signing: steps run only when the secrets are configured in the repo ---
+      - name: Windows code signing (optional)
+        if: ${{ env.WINDOWS_CERT_BASE64 != '' }}
+        env:
+          WINDOWS_CERT_BASE64: ${{ secrets.WINDOWS_CERT_BASE64 }}
+          WINDOWS_CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq osslsigncode
+          echo "$WINDOWS_CERT_BASE64" | base64 -d > cert.pfx
+          osslsigncode sign -pkcs12 cert.pfx -pass "$WINDOWS_CERT_PASSWORD" \
+            -n "wallee Virtual Terminal" -i https://wallee.com -t http://timestamp.digicert.com \
+            -in out/wallee-virtual-terminal-windows.exe -out out/signed.exe
+          mv out/signed.exe out/wallee-virtual-terminal-windows.exe
+          rm cert.pfx
+          (cd out && sha256sum wallee-virtual-terminal-* > SHA256SUMS.txt)
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: binaries
+          path: out/
+
+  # macOS signing + notarization must run on a macOS runner. Runs only when APPLE_* secrets exist.
+  sign-macos:
+    name: macOS signing & notarization (optional)
+    needs: build
+    runs-on: macos-latest
+    if: ${{ vars.MACOS_SIGNING_ENABLED == 'true' }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: binaries
+          path: out
+      - name: Import certificate
+        env:
+          APPLE_CERT_BASE64: ${{ secrets.APPLE_CERT_BASE64 }}
+          APPLE_CERT_PASSWORD: ${{ secrets.APPLE_CERT_PASSWORD }}
+        run: |
+          echo "$APPLE_CERT_BASE64" | base64 -d > cert.p12
+          security create-keychain -p ci build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p ci build.keychain
+          security import cert.p12 -k build.keychain -P "$APPLE_CERT_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k ci build.keychain
+      - name: Sign & notarize
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+        run: |
+          for f in out/wallee-virtual-terminal-macos-*; do
+            codesign --force --options runtime --timestamp --sign "$APPLE_SIGNING_IDENTITY" "$f"
+            zip -j "$f.zip" "$f"
+            xcrun notarytool submit "$f.zip" --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_PASSWORD" --wait
+            rm "$f.zip"
+          done
+          (cd out && shasum -a 256 wallee-virtual-terminal-* > SHA256SUMS.txt)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: binaries
+          path: out/
+          overwrite: true
+
+  release:
+    name: Publish GitHub Release
+    needs: [build, sign-macos]
+    if: ${{ always() && needs.build.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: binaries
+          path: out
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: out/*
+          generate_release_notes: true
