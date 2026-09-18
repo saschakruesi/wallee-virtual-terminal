@@ -1044,3 +1044,12 @@ button.stepper__step:hover .stepper__circle {
   border-radius: var(--r-md);
   padding: var(--s-2) var(--s-3);
 }
+
+.product-picker__list {
+  position: absolute;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  top: calc(100% - 22px);
+  background: var(--w-bg);
+}

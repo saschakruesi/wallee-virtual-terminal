@@ -25,6 +25,7 @@ import {
 } from '@/lib/storage'
 import type { AppConfig, CompletionBehavior, Environment, PaymentLanguage } from '@/lib/storage'
 import { testConnection } from './connectionTest'
+import { CatalogTransfer } from '@/features/products/CatalogTransfer'
 import type { ConnectionResult } from './connectionTest'
 import { describeApiError } from './errorMessages'
 
@@ -414,7 +415,7 @@ export function SetupPage() {
               onChange={setLang}
               options={LANGS.map((l) => ({ value: l, label: t(`lang.${l}`) }))}
             />
-            <p className="small muted">{t('setup.catalog.hint')}</p>
+            <CatalogTransfer compact />
             <div>
               <Button variant="danger" onClick={() => setConfirmClear(true)}>
                 {t('setup.danger.clear')}

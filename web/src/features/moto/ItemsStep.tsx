@@ -5,6 +5,8 @@ import { formatAmount, formatMoney } from '@/lib/money'
 import { CURRENCIES } from '@/lib/storage'
 import type { LineItemType } from '@/api/transactions'
 import { LINE_TYPES, SWISS_TAX_RATES, emptyItem } from './draft'
+import { ProductPicker } from './ProductPicker'
+import type { Product } from '@/lib/catalog'
 import type { Draft, ItemsValidation, LineItemDraft, Totals } from './draft'
 
 type Props = {
@@ -32,6 +34,24 @@ export function ItemsStep({ draft, totals, validation, showErrors, onChange }: P
     setTimeout(() => nameRefs.current.get(item.id)?.focus(), 0)
   }
 
+  const qtyRefs = useRef(new Map<string, HTMLInputElement>())
+
+  /** Adds a catalogue product (quantity 1), replacing an untouched empty first row, then focuses its quantity. */
+  const addProduct = (product: Product) => {
+    const item = {
+      ...emptyItem(product.type),
+      name: product.name,
+      sku: product.sku,
+      unitPrice: product.price,
+      taxRate: product.taxRate,
+    }
+    onChange((d) => {
+      const untouched = d.items.length === 1 && !d.items[0]!.name && d.items[0]!.unitPrice === null
+      return { ...d, items: untouched ? [item] : [...d.items, item] }
+    })
+    setTimeout(() => qtyRefs.current.get(item.id)?.focus(), 0)
+  }
+
   const removeItem = (id: string) =>
     onChange((d) => ({ ...d, items: d.items.filter((it) => it.id !== id) }))
 
@@ -42,13 +62,7 @@ export function ItemsStep({ draft, totals, validation, showErrors, onChange }: P
   return (
     <div>
       <div className="items-toolbar">
-        {/* Phase 6: product autocomplete from the local catalogue */}
-        <Input
-          label={t('items.productSearch')}
-          placeholder={t('items.productSearch')}
-          hint={t('items.productSearch.hint')}
-          disabled
-        />
+        <ProductPicker onPick={addProduct} />
         <div style={{ paddingBottom: 26 }}>
           <Button variant="secondary" icon={<Icon name="plus" />} onClick={() => addItem()}>
             {t('items.addFree')}
@@ -107,6 +121,10 @@ export function ItemsStep({ draft, totals, validation, showErrors, onChange }: P
                 </td>
                 <td>
                   <Input
+                    ref={(el) => {
+                      if (el) qtyRefs.current.set(it.id, el)
+                      else qtyRefs.current.delete(it.id)
+                    }}
                     aria-label={`${t('items.quantity')} ${i + 1}`}
                     align="right"
                     inputMode="decimal"
