@@ -1,0 +1,92 @@
+{
+  "app.title": "wallee Virtual Terminal",
+  "app.wordmarkAlt": "wallee",
+  "app.skipToContent": "Zum Inhalt springen",
+
+  "nav.label": "Hauptnavigation",
+  "nav.new": "Neuer Vorgang",
+  "nav.history": "Vorgänge",
+  "nav.customers": "Kunden",
+  "nav.products": "Produkte",
+  "nav.openCount": "{count} offen",
+
+  "header.notConnected": "Nicht verbunden",
+  "header.setup": "Einrichten",
+  "header.settings": "Einstellungen",
+  "header.envPreview": "PREVIEW",
+
+  "status.version": "Version {version}",
+  "status.connected": "Verbunden mit Space {space}",
+  "status.notConnected": "Nicht mit wallee verbunden",
+
+  "common.cancel": "Abbrechen",
+  "common.confirm": "Bestätigen",
+  "common.close": "Schliessen",
+  "common.copy": "Kopieren",
+  "common.copied": "Kopiert",
+  "common.open": "Öffnen",
+  "common.save": "Speichern",
+  "common.loading": "Wird geladen…",
+  "common.retry": "Erneut versuchen",
+  "common.back": "Zurück",
+  "common.next": "Weiter",
+  "common.delete": "Löschen",
+  "common.language": "Sprache",
+  "common.optional": "optional",
+  "common.showPassword": "Schlüssel anzeigen",
+  "common.hidePassword": "Schlüssel verbergen",
+  "common.noEntries": "Keine Einträge",
+
+  "lang.de": "Deutsch",
+  "lang.en": "English",
+
+  "badge.paid": "Bezahlt",
+  "badge.completed": "Abgeschlossen",
+  "badge.authorized": "Autorisiert",
+  "badge.open": "Offen",
+  "badge.pending": "Ausstehend",
+  "badge.failed": "Fehlgeschlagen",
+  "badge.cancelled": "Storniert",
+  "badge.expired": "Abgelaufen",
+  "badge.test": "Testumgebung",
+
+  "headline.new.kicker": "Neuer Vorgang",
+  "headline.new.title": "Zahlung erfassen",
+  "headline.setup.kicker": "Einrichtung",
+  "headline.setup.title": "wallee verbinden",
+  "headline.history.kicker": "Vorgänge",
+  "headline.history.title": "Letzte Vorgänge",
+  "headline.customers.kicker": "Kunden",
+  "headline.customers.title": "Kundenstamm",
+  "headline.products.kicker": "Produkte",
+  "headline.products.title": "Lokaler Katalog",
+  "headline.styleguide.kicker": "Intern",
+  "headline.styleguide.title": "Styleguide",
+  "headline.notFound.kicker": "Fehler",
+  "headline.notFound.title": "Seite nicht gefunden",
+
+  "placeholder.title": "Dieser Bereich folgt in Phase {phase}.",
+  "placeholder.text": "Das Gerüst der App steht. Die Funktion wird gemäss Implementationsplan ergänzt.",
+  "placeholder.toSetup": "Zur Einrichtung",
+
+  "setup.intro": "Sie brauchen einen Application User mit Berechtigung auf Ihren Space.",
+  "setup.introLink": "Anleitung",
+  "setup.claim": "#homeofpayment",
+  "setup.appLanguage": "Sprache der App",
+
+  "notFound.text": "Die aufgerufene Seite existiert nicht.",
+  "notFound.home": "Zur Startseite",
+
+  "toast.success": "Erfolgreich",
+  "toast.error": "Fehler",
+
+  "stepper.label": "Schritte",
+  "stepper.step": "Schritt {n} von {total}: {label}",
+  "stepper.customer": "Kunde",
+  "stepper.items": "Positionen",
+  "stepper.review": "Prüfen & starten",
+
+  "table.loading": "Daten werden geladen",
+
+  "modal.close": "Dialog schliessen"
+}

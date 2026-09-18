@@ -1,0 +1,92 @@
+{
+  "app.title": "wallee Virtual Terminal",
+  "app.wordmarkAlt": "wallee",
+  "app.skipToContent": "Skip to content",
+
+  "nav.label": "Main navigation",
+  "nav.new": "New transaction",
+  "nav.history": "Transactions",
+  "nav.customers": "Customers",
+  "nav.products": "Products",
+  "nav.openCount": "{count} open",
+
+  "header.notConnected": "Not connected",
+  "header.setup": "Set up",
+  "header.settings": "Settings",
+  "header.envPreview": "PREVIEW",
+
+  "status.version": "Version {version}",
+  "status.connected": "Connected to space {space}",
+  "status.notConnected": "Not connected to wallee",
+
+  "common.cancel": "Cancel",
+  "common.confirm": "Confirm",
+  "common.close": "Close",
+  "common.copy": "Copy",
+  "common.copied": "Copied",
+  "common.open": "Open",
+  "common.save": "Save",
+  "common.loading": "Loading…",
+  "common.retry": "Retry",
+  "common.back": "Back",
+  "common.next": "Next",
+  "common.delete": "Delete",
+  "common.language": "Language",
+  "common.optional": "optional",
+  "common.showPassword": "Show key",
+  "common.hidePassword": "Hide key",
+  "common.noEntries": "No entries",
+
+  "lang.de": "Deutsch",
+  "lang.en": "English",
+
+  "badge.paid": "Paid",
+  "badge.completed": "Completed",
+  "badge.authorized": "Authorized",
+  "badge.open": "Open",
+  "badge.pending": "Pending",
+  "badge.failed": "Failed",
+  "badge.cancelled": "Cancelled",
+  "badge.expired": "Expired",
+  "badge.test": "Test environment",
+
+  "headline.new.kicker": "New transaction",
+  "headline.new.title": "Take a payment",
+  "headline.setup.kicker": "Setup",
+  "headline.setup.title": "Connect wallee",
+  "headline.history.kicker": "Transactions",
+  "headline.history.title": "Recent transactions",
+  "headline.customers.kicker": "Customers",
+  "headline.customers.title": "Customer directory",
+  "headline.products.kicker": "Products",
+  "headline.products.title": "Local catalogue",
+  "headline.styleguide.kicker": "Internal",
+  "headline.styleguide.title": "Style guide",
+  "headline.notFound.kicker": "Error",
+  "headline.notFound.title": "Page not found",
+
+  "placeholder.title": "This area arrives in phase {phase}.",
+  "placeholder.text": "The application shell is in place. The feature is added according to the implementation plan.",
+  "placeholder.toSetup": "Go to setup",
+
+  "setup.intro": "You need an application user with permissions on your space.",
+  "setup.introLink": "Instructions",
+  "setup.claim": "#homeofpayment",
+  "setup.appLanguage": "App language",
+
+  "notFound.text": "The requested page does not exist.",
+  "notFound.home": "Go to start page",
+
+  "toast.success": "Success",
+  "toast.error": "Error",
+
+  "stepper.label": "Steps",
+  "stepper.step": "Step {n} of {total}: {label}",
+  "stepper.customer": "Customer",
+  "stepper.items": "Line items",
+  "stepper.review": "Review & start",
+
+  "table.loading": "Loading data",
+
+  "modal.close": "Close dialog"
+}
