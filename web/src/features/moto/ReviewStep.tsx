@@ -44,7 +44,9 @@ export function ReviewStep({ draft, totals, config, creating, error, onStart, on
           {c.organizationName && (c.givenName || c.familyName) && (
             <p className="small muted">{c.organizationName}</p>
           )}
-          {c.emailAddress && <p className="small muted">{c.emailAddress}</p>}
+          {c.emailAddress && c.emailAddress !== customerLabel(c, '') && (
+            <p className="small muted">{c.emailAddress}</p>
+          )}
           {address && <p className="small muted">{address}</p>}
         </section>
         <section>

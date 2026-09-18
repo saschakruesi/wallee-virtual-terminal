@@ -6,6 +6,7 @@ import { Layout } from './Layout'
 import { SetupPage } from '@/features/setup/SetupPage'
 import { NewTransactionPage } from '@/features/moto/NewTransactionPage'
 import { MotoPage } from '@/features/moto/MotoPage'
+import { LinkPage } from '@/features/paymentlink/LinkPage'
 import { HistoryPage } from '@/features/history/HistoryPage'
 import { CustomersPage } from '@/features/customers/CustomersPage'
 import { ProductsPage } from '@/features/products/ProductsPage'
@@ -26,7 +27,7 @@ export function App() {
                 <Route element={<RequireConfig />}>
                   <Route index element={<NewTransactionPage />} />
                   <Route path="moto/:id" element={<MotoPage />} />
-                  <Route path="link/:id" element={<NewTransactionPage />} />
+                  <Route path="link/:id" element={<LinkPage />} />
                   <Route path="history" element={<HistoryPage />} />
                   <Route path="customers" element={<CustomersPage />} />
                   <Route path="customers/new" element={<CustomersPage />} />

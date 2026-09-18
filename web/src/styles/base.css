@@ -333,3 +333,8 @@ a:hover {
   align-items: center;
   flex-wrap: wrap;
 }
+
+.grow {
+  flex: 1;
+  min-width: 220px;
+}
