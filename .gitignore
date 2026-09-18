@@ -5,3 +5,6 @@ helper/wallee-virtual-terminal*
 dist/
 .env.local
 .DS_Store
+coverage/
+web/node_modules/.tmp/
+*.log
