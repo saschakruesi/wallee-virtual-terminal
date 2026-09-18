@@ -797,3 +797,202 @@ button.stepper__step:hover .stepper__circle {
 .result-list dd {
   margin: 0;
 }
+
+/* ---------- StatusTimeline ---------- */
+.timeline {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-1);
+  margin: var(--s-2) 0;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.timeline__step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 96px;
+  text-align: center;
+  color: var(--w-text-muted);
+  font-size: var(--fs-small);
+}
+.timeline__circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fs-small);
+  font-weight: 500;
+  border: 1px solid var(--w-line);
+  background: var(--w-bg);
+  color: var(--w-text-muted);
+}
+.timeline__step.is-done {
+  color: var(--w-text);
+}
+.timeline__step.is-done .timeline__circle {
+  background: var(--w-black);
+  border-color: var(--w-black);
+  color: #fff;
+}
+.timeline__step.is-current {
+  color: var(--w-black);
+  font-weight: 500;
+}
+.timeline__step.is-current .timeline__circle {
+  background: var(--w-turquoise);
+  border-color: var(--w-turquoise);
+  color: var(--w-black);
+}
+.timeline__step.is-failed .timeline__circle {
+  background: var(--w-orange-soft);
+  border-color: var(--w-orange);
+  color: var(--w-orange-text);
+}
+.timeline__step.is-failed {
+  color: var(--w-orange-text);
+}
+.timeline__step.is-cancelled .timeline__circle {
+  background: var(--w-badge-neutral);
+  border-color: var(--w-line);
+  color: var(--w-text-muted);
+}
+.timeline__line {
+  flex: 1;
+  height: 1px;
+  background: var(--w-line);
+  min-width: 16px;
+  margin-top: 14px;
+}
+.timeline__time {
+  font-size: var(--fs-tiny);
+  font-weight: 300;
+  color: var(--w-text-muted);
+  min-height: 1.2em;
+}
+
+/* ---------- Wizard ---------- */
+.wizard-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s-2);
+  margin-top: var(--s-4);
+  flex-wrap: wrap;
+}
+.items-table td {
+  vertical-align: top;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  height: auto;
+}
+.items-table .field {
+  gap: 0;
+}
+.items-table .field__error {
+  margin-top: 2px;
+}
+.items-table td.is-total {
+  padding-top: 18px;
+  white-space: nowrap;
+}
+.items-table__remove {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--w-text-muted);
+  border-radius: var(--r-sm);
+  margin-top: 4px;
+}
+.items-table__remove:hover {
+  color: var(--w-orange);
+  background: var(--w-bg-soft);
+}
+.items-toolbar {
+  display: flex;
+  gap: var(--s-2);
+  align-items: flex-end;
+  margin-bottom: var(--s-2);
+  flex-wrap: wrap;
+}
+.items-toolbar > .field {
+  flex: 1;
+  min-width: 240px;
+}
+.totals {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--s-3);
+  align-items: start;
+  margin-top: var(--s-3);
+}
+.totals__box {
+  text-align: right;
+  min-width: 260px;
+}
+.totals__breakdown {
+  font-size: var(--fs-small);
+  color: var(--w-text-muted);
+  margin-top: 6px;
+}
+.totals__breakdown div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-2);
+}
+.summary-list {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px var(--s-2);
+  font-size: var(--fs-small);
+}
+.summary-list dt {
+  color: var(--w-text-muted);
+}
+.summary-list dd {
+  margin: 0;
+  color: var(--w-text);
+  overflow-wrap: anywhere;
+}
+.result-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--w-black);
+  color: #fff;
+}
+.result-icon .icon {
+  width: 36px;
+  height: 36px;
+}
+.result-icon--failed {
+  background: #fff;
+  color: var(--w-orange);
+  border: 2px solid var(--w-orange);
+}
+.result-icon--muted {
+  background: #fff;
+  color: var(--w-black);
+  border: 2px solid var(--w-black);
+}
+.result-title {
+  font-size: var(--fs-headline);
+  font-weight: 500;
+  color: var(--w-black);
+}
+@media (max-width: 900px) {
+  .totals {
+    grid-template-columns: 1fr;
+  }
+  .totals__box {
+    text-align: left;
+  }
+}
