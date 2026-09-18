@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useI18n } from '@/i18n'
 import {
   Button,
@@ -10,8 +10,6 @@ import {
   Icon,
   Spinner,
   Split,
-  StatusBadge,
-  StatusTimeline,
   useToast,
 } from '@/components'
 import { useConfig } from '@/app/ConfigProvider'
@@ -27,7 +25,9 @@ import {
 } from '@/api/transactions'
 import type { ChargeAttempt, Transaction } from '@/api/transactions'
 import { badgeFor } from './status'
-import { formatAmount, formatMoney, fromMajor } from '@/lib/money'
+import { NewTransactionButton, Result } from './Result'
+import { TransactionSummary } from './TransactionSummary'
+import { formatMoney, fromMajor } from '@/lib/money'
 import { downloadBase64, extensionForMime, safeFilename } from '@/lib/download'
 import { findRecent, updateRecent } from '@/lib/recent'
 import { describeApiError } from '@/features/setup/errorMessages'
@@ -249,12 +249,6 @@ export function MotoPage() {
     )
   }
 
-  const c = transaction.billingAddress
-  const customerName =
-    [c?.givenName, c?.familyName].filter(Boolean).join(' ') ||
-    c?.organizationName ||
-    transaction.customerEmailAddress ||
-    t('customer.none')
   const failure = isFailed(transaction.state) ? failureMessage(transaction, lang) : undefined
   const labels = (attempt?.labels ?? [])
     .filter((l) => l.contentAsString && l.descriptor?.name)
@@ -304,55 +298,15 @@ export function MotoPage() {
 
       <Split
         left={
-          <div className="stack">
-            <div className="row" style={{ justifyContent: 'space-between' }}>
-              <StatusBadge status={badgeFor(transaction.state, cancelledLocally)} />
-              {cfg.environment === 'PREVIEW' && <StatusBadge status="test" />}
-            </div>
-            <StatusTimeline
-              transaction={transaction}
-              mode="MOTO"
-              failureText={failure}
-              lang={lang}
-            />
-            <dl className="summary-list">
-              <dt>{t('moto.customer')}</dt>
-              <dd>
-                {customerName}
-                {transaction.customerEmailAddress &&
-                  customerName !== transaction.customerEmailAddress && (
-                    <span className="muted"> · {transaction.customerEmailAddress}</span>
-                  )}
-              </dd>
-              <dt>{t('moto.reference')}</dt>
-              <dd className="tnum">{transaction.merchantReference ?? '—'}</dd>
-              <dt>{t('moto.transactionId')}</dt>
-              <dd className="tnum">{transaction.id}</dd>
-            </dl>
-            <table className="table">
-              <tbody>
-                {(transaction.lineItems ?? []).map((li, i) => (
-                  <tr key={li.uniqueId ?? i}>
-                    <td>
-                      {li.name}
-                      {li.quantity != null && li.quantity !== 1 && (
-                        <span className="small muted"> × {li.quantity}</span>
-                      )}
-                    </td>
-                    <td className="is-right tnum">
-                      {formatAmount(fromMajor(li.amountIncludingTax ?? 0), {
-                        negativeInParens: true,
-                      })}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <div style={{ textAlign: 'right' }}>
-              <div className="small muted">{t('moto.total')}</div>
-              <div className="display-amount">{formatMoney(amount, currency)}</div>
-            </div>
-          </div>
+          <TransactionSummary
+            transaction={transaction}
+            mode="MOTO"
+            badge={badgeFor(transaction.state, cancelledLocally)}
+            showTestBadge={cfg.environment === 'PREVIEW'}
+            failureText={failure}
+            amount={amount}
+            currency={currency}
+          />
         }
         right={
           <ResultPanel
@@ -547,81 +501,5 @@ function ResultPanel(p: PanelProps) {
     <Result icon="close" tone="muted" title={t('moto.voided')} amount={p.amountText}>
       <NewTransactionButton />
     </Result>
-  )
-}
-
-function Result({
-  icon,
-  tone,
-  title,
-  text,
-  amount,
-  labels,
-  children,
-}: {
-  icon: 'check' | 'warning' | 'close'
-  tone: 'ok' | 'failed' | 'muted'
-  title: string
-  text?: string
-  amount?: string
-  labels?: { contentAsString?: string; descriptor?: { name?: string } }[]
-  children?: React.ReactNode
-}) {
-  const { t } = useI18n()
-  return (
-    <div
-      className="stack"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 'var(--s-3)',
-        alignItems: 'flex-start',
-      }}
-    >
-      <span
-        className={[
-          'result-icon',
-          tone === 'failed' ? 'result-icon--failed' : tone === 'muted' ? 'result-icon--muted' : '',
-        ]
-          .join(' ')
-          .trim()}
-        aria-hidden="true"
-      >
-        <Icon name={icon} />
-      </span>
-      <div className="result-title" role="status">
-        {title}
-      </div>
-      {amount && <div className="display-amount">{amount}</div>}
-      {text && (
-        <p className="statement" style={{ fontSize: 17 }}>
-          {text}
-        </p>
-      )}
-      {labels && labels.length > 0 && (
-        <dl className="summary-list">
-          <dt>{t('moto.cardDetails')}</dt>
-          <dd>{labels.map((l) => `${l.descriptor?.name}: ${l.contentAsString}`).join(' · ')}</dd>
-        </dl>
-      )}
-      <div className="row" style={{ marginTop: 'var(--s-2)' }}>
-        {children}
-      </div>
-    </div>
-  )
-}
-
-function NewTransactionButton({ secondary }: { secondary?: boolean }) {
-  const { t } = useI18n()
-  return (
-    <Link
-      to="/"
-      className={['btn', secondary ? 'btn--secondary' : 'btn--primary', secondary ? '' : 'btn--lg']
-        .join(' ')
-        .trim()}
-      style={{ textDecoration: 'none' }}
-    >
-      {t('moto.newTransaction')}
-    </Link>
   )
 }

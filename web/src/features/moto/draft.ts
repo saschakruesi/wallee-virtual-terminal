@@ -48,6 +48,8 @@ export type DiscountDraft = { kind: 'amount' | 'percent'; value: number } | null
 export type Draft = {
   version: 1
   mode: Mode
+  /** False until the employee picked MOTO or LINK on the start screen. */
+  modeChosen: boolean
   step: 0 | 1 | 2
   customer: CustomerDraft
   items: LineItemDraft[]
@@ -91,6 +93,7 @@ export function newDraft(
   return {
     version: 1,
     mode,
+    modeChosen: false,
     step: 0,
     customer: emptyCustomer(),
     items: [emptyItem()],

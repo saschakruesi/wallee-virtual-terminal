@@ -2,9 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useI18n } from '@/i18n'
-import { Button, ConfirmDialog, Headline, Stepper, useToast } from '@/components'
+import { Button, ConfirmDialog, Headline, Segmented, Stepper, useToast } from '@/components'
 import { useConfig } from '@/app/ConfigProvider'
 import { createTransaction } from '@/api/transactions'
+import { applyChargeFlow } from '@/api/chargeFlows'
+import { readUiPrefs, updateUiPrefs } from '@/lib/storage'
 import { APP_VERSION } from '@/lib/version'
 import { addRecent } from '@/lib/recent'
 import { describeApiError } from '@/features/setup/errorMessages'
@@ -22,7 +24,8 @@ import {
   validateCustomer,
   validateItems,
 } from './draft'
-import type { Draft } from './draft'
+import type { Draft, Mode } from './draft'
+import { ModeStep } from './ModeStep'
 import { CustomerStep } from './CustomerStep'
 import { ItemsStep } from './ItemsStep'
 import { ReviewStep } from './ReviewStep'
@@ -43,7 +46,9 @@ export function NewTransactionPage() {
 
   const [draft, setDraft] = useState<Draft>(() => {
     const restored = (location.state as { draft?: Draft } | null)?.draft ?? loadDraft()
-    return restored ?? newDraft(cfg)
+    if (restored) return restored
+    const last = readUiPrefs().lastMode
+    return newDraft(cfg, last === 'LINK' && cfg.chargeFlowAvailable ? 'LINK' : 'MOTO')
   })
   const [showErrors, setShowErrors] = useState(false)
   const [creating, setCreating] = useState(false)
@@ -109,6 +114,14 @@ export function NewTransactionPage() {
     try {
       const payload = buildTransactionCreate(draft, cfg, t, APP_VERSION)
       const tx = await createTransaction(cfg, payload)
+      let applyError: string | null = null
+      if (draft.mode === 'LINK') {
+        try {
+          await applyChargeFlow(cfg, tx.id)
+        } catch (err) {
+          applyError = describeApiError(err, t, { spaceId: cfg.spaceId })
+        }
+      }
       consumeReference(cfg.merchantReferencePrefix, draft.reference)
       rememberDraftForTransaction(tx.id, draft)
       addRecent({
@@ -122,8 +135,9 @@ export function NewTransactionPage() {
         state: tx.state,
       })
       clearDraft()
+      updateUiPrefs({ lastMode: draft.mode })
       navigate(`/${draft.mode === 'MOTO' ? 'moto' : 'link'}/${tx.id}`, {
-        state: { popupOpened: Boolean(popup), fresh: true },
+        state: { popupOpened: Boolean(popup), fresh: true, applyError },
       })
     } catch (err) {
       if (popup && !popup.closed) popup.close()
@@ -140,10 +154,17 @@ export function NewTransactionPage() {
 
   const reset = () => {
     clearDraft()
-    setDraft(newDraft(cfg, draft.mode))
+    setDraft({ ...newDraft(cfg, draft.mode), modeChosen: true })
     setShowErrors(false)
     setCreateError(null)
     setConfirmReset(false)
+  }
+
+  const linkAvailable = Boolean(cfg.chargeFlowAvailable)
+  const chooseMode = (mode: Mode) => {
+    updateUiPrefs({ lastMode: mode })
+    update({ mode, modeChosen: true, step: draft.step })
+    setShowErrors(false)
   }
 
   const steps = [
@@ -158,55 +179,84 @@ export function NewTransactionPage() {
         kicker={t('headline.new.kicker')}
         title={t('headline.new.title')}
         actions={
-          <Button variant="text" onClick={() => setConfirmReset(true)}>
-            {t('wizard.reset')}
-          </Button>
+          draft.modeChosen ? (
+            <>
+              <Segmented<Mode>
+                aria-label={t('mode.switch')}
+                size="sm"
+                value={draft.mode}
+                onChange={chooseMode}
+                options={[
+                  { value: 'MOTO', label: t('mode.moto.short') },
+                  { value: 'LINK', label: t('mode.link.short'), disabled: !linkAvailable },
+                ]}
+              />
+              <Button variant="text" onClick={() => setConfirmReset(true)}>
+                {t('wizard.reset')}
+              </Button>
+            </>
+          ) : undefined
         }
       />
-      <Stepper steps={steps} current={draft.step} onSelect={(i) => goTo(i as 0 | 1 | 2)} />
 
-      <div ref={stepRef} onKeyDown={onKeyDown}>
-        {draft.step === 0 && (
-          <CustomerStep
-            customer={draft.customer}
-            mode={draft.mode}
-            error={showErrors ? customerValidation.emailAddress : undefined}
-            onChange={(customer) => update({ customer })}
-          />
-        )}
-        {draft.step === 1 && (
-          <ItemsStep
-            draft={draft}
-            totals={totals}
-            validation={itemsValidation}
-            showErrors={showErrors}
-            onChange={update}
-          />
-        )}
-        {draft.step === 2 && (
-          <ReviewStep
-            draft={draft}
-            totals={totals}
-            config={cfg}
-            creating={creating}
-            error={createError}
-            onStart={start}
-            onEdit={goTo}
-          />
-        )}
-      </div>
+      {!draft.modeChosen ? (
+        <ModeStep
+          value={draft.mode}
+          linkAvailable={linkAvailable}
+          onChange={(mode) => update({ mode })}
+          onStart={(mode) => {
+            chooseMode(mode)
+            goTo(0)
+          }}
+        />
+      ) : (
+        <>
+          <Stepper steps={steps} current={draft.step} onSelect={(i) => goTo(i as 0 | 1 | 2)} />
 
-      {draft.step < 2 && (
-        <div className="wizard-actions">
-          <div>
-            {draft.step > 0 && (
-              <Button variant="secondary" onClick={back}>
-                {t('wizard.back')}
-              </Button>
+          <div ref={stepRef} onKeyDown={onKeyDown}>
+            {draft.step === 0 && (
+              <CustomerStep
+                customer={draft.customer}
+                mode={draft.mode}
+                error={showErrors ? customerValidation.emailAddress : undefined}
+                onChange={(customer) => update({ customer })}
+              />
+            )}
+            {draft.step === 1 && (
+              <ItemsStep
+                draft={draft}
+                totals={totals}
+                validation={itemsValidation}
+                showErrors={showErrors}
+                onChange={update}
+              />
+            )}
+            {draft.step === 2 && (
+              <ReviewStep
+                draft={draft}
+                totals={totals}
+                config={cfg}
+                creating={creating}
+                error={createError}
+                onStart={start}
+                onEdit={goTo}
+              />
             )}
           </div>
-          <Button onClick={next}>{t('wizard.next')}</Button>
-        </div>
+
+          {draft.step < 2 && (
+            <div className="wizard-actions">
+              <div>
+                {draft.step > 0 && (
+                  <Button variant="secondary" onClick={back}>
+                    {t('wizard.back')}
+                  </Button>
+                )}
+              </div>
+              <Button onClick={next}>{t('wizard.next')}</Button>
+            </div>
+          )}
+        </>
       )}
 
       <ConfirmDialog

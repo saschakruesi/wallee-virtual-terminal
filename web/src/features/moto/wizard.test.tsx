@@ -49,6 +49,7 @@ describe('MOTO wizard', () => {
     window.location.hash = '#/'
     const user = userEvent.setup()
     render(<App />)
+    await user.click(screen.getByRole('button', { name: /Telefon \/ MOTO/ }))
 
     // Step 1: optional customer data
     await user.type(screen.getByLabelText('E-Mail'), 'gast@example.com')
@@ -101,6 +102,7 @@ describe('MOTO wizard', () => {
     window.location.hash = '#/'
     const user = userEvent.setup()
     render(<App />)
+    await user.click(screen.getByRole('button', { name: /Telefon \/ MOTO/ }))
     await user.click(screen.getByRole('button', { name: 'Weiter' }))
     await user.click(screen.getByRole('button', { name: 'Weiter' }))
     expect(screen.getByText('Bezeichnung fehlt')).toBeInTheDocument()
