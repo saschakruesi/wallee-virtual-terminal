@@ -3,7 +3,7 @@
 Sieben Phasen, jede mit «Definition of Done». Reihenfolge einhalten; Phase 1–3 ergeben bereits ein
 brauchbares MOTO-Werkzeug, Phase 4 bringt den Zahlungslink, 5–6 die Stammdaten, 7 den Release.
 
-**Aktuelle Phase: 2** (Claude Code aktualisiert diese Zeile beim Abschluss jeder Phase. Phase 1 abgeschlossen am 18.09.2026, Branch `phase-1-scaffold`.)
+**Aktuelle Phase: 2 → 3** (Claude Code aktualisiert diese Zeile beim Abschluss jeder Phase. Phase 1 abgeschlossen am 18.09.2026. Phase 2 am 18.09.2026 implementiert, Branch `phase-2-setup`; DoD-Abnahme mit echten Test-Space-Credentials steht noch aus — Fehlerpfad 401 gegen app-wallee.com ist verifiziert.)
 
 Voraussetzungen für die Entwicklung: Node 20+, Go 1.22+, ein wallee **Test-Space** mit Application User,
 Test-Connector und einem aktiven Charge Flow (Level «E-Mail»). Credentials nur lokal in `.env.local`

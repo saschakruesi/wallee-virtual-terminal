@@ -782,3 +782,18 @@ button.stepper__step:hover .stepper__circle {
   gap: var(--s-3);
   align-items: start;
 }
+
+/* ---------- Definition list (connection result) ---------- */
+.result-list {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px var(--s-2);
+}
+.result-list dt {
+  color: var(--w-text-muted);
+  font-size: var(--fs-small);
+  padding-top: 2px;
+}
+.result-list dd {
+  margin: 0;
+}
