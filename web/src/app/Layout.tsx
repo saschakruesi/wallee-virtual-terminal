@@ -3,6 +3,7 @@ import { useT } from '@/i18n'
 import { Icon } from '@/components'
 import logo from '@/assets/wallee_logo_turquoise.svg'
 import { APP_VERSION } from '@/lib/version'
+import { useConfig } from './ConfigProvider'
 
 const NAV = [
   { to: '/', key: 'nav.new', end: true },
@@ -13,6 +14,7 @@ const NAV = [
 
 export function Layout() {
   const t = useT()
+  const { config } = useConfig()
   return (
     <div className="app">
       <a href="#main" className="visually-hidden">
@@ -48,24 +50,37 @@ export function Layout() {
       <footer className="app-status">
         <span>{t('status.version', { version: APP_VERSION })}</span>
         <span aria-hidden="true">·</span>
-        <span>{t('status.notConnected')}</span>
+        <span>
+          {config
+            ? t('status.connectedName', { space: config.spaceName ?? config.spaceId })
+            : t('status.notConnected')}
+        </span>
       </footer>
     </div>
   )
 }
 
-/**
- * Placeholder until phase 2 delivers the real space chip (name + PREVIEW badge).
- * Links to the setup screen.
- */
+/** Space name + PREVIEW badge (orange text, test only); links to the settings. */
 function SpaceChip() {
   const t = useT()
+  const { config } = useConfig()
+  if (!config) {
+    return (
+      <Link to="/setup" className="space-chip" aria-label={t('header.settings')}>
+        <span className="muted">{t('header.notConnected')}</span>
+        <span aria-hidden="true">·</span>
+        <span>{t('header.setup')}</span>
+        <Icon name="chevron-right" size="sm" />
+      </Link>
+    )
+  }
   return (
     <Link to="/setup" className="space-chip" aria-label={t('header.settings')}>
-      <span className="muted">{t('header.notConnected')}</span>
-      <span aria-hidden="true">·</span>
-      <span>{t('header.setup')}</span>
-      <Icon name="chevron-right" size="sm" />
+      <span>{config.spaceName ?? t('header.connectedTo', { space: config.spaceId })}</span>
+      {config.environment === 'PREVIEW' && (
+        <span className="space-chip__env">{t('header.envPreview')}</span>
+      )}
+      <Icon name="chevron-down" size="sm" />
     </Link>
   )
 }

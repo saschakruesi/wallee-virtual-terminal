@@ -26,7 +26,7 @@ export default tseslint.config(
   },
   {
     // Context modules legitimately export a provider plus hooks.
-    files: ['src/i18n/index.tsx', 'src/components/Toast.tsx'],
+    files: ['src/i18n/index.tsx', 'src/components/Toast.tsx', 'src/app/ConfigProvider.tsx'],
     rules: { 'react-refresh/only-export-components': 'off' },
   },
 )
