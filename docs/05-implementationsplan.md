@@ -3,7 +3,7 @@
 Sieben Phasen, jede mit «Definition of Done». Reihenfolge einhalten; Phase 1–3 ergeben bereits ein
 brauchbares MOTO-Werkzeug, Phase 4 bringt den Zahlungslink, 5–6 die Stammdaten, 7 den Release.
 
-**Aktuelle Phase: 4 → 5** (Claude Code aktualisiert diese Zeile beim Abschluss jeder Phase. Phase 1–3 gemerged. Phase 4 am 18.09.2026 implementiert, Branch `phase-4-link`. DoD-Abnahme der Phasen 2–4 (Testzahlung, Decline, COMPLETE_DEFERRED, Beleg, Zahlungslink-E-Mail, Empfänger ändern) braucht Test-Space-Credentials und steht aus.)
+**Aktuelle Phase: 5 → 6** (Claude Code aktualisiert diese Zeile beim Abschluss jeder Phase. Phase 1–4 gemerged. Phase 5 am 18.09.2026 implementiert, Branch `phase-5-customers`. DoD-Abnahme der Phasen 2–5 mit Test-Space-Credentials steht aus.)
 
 Voraussetzungen für die Entwicklung: Node 20+, Go 1.22+, ein wallee **Test-Space** mit Application User,
 Test-Connector und einem aktiven Charge Flow (Level «E-Mail»). Credentials nur lokal in `.env.local`
