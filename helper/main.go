@@ -19,6 +19,7 @@ import (
 	"os/signal"
 	"runtime"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -46,7 +47,13 @@ func main() {
 	}
 
 	log.SetFlags(log.Ltime)
+	cleanupOldBinary()
 
+	// After a self-update the new binary must come up on the same port; the old process may
+	// still be releasing it, so wait a little instead of jumping to the next free port.
+	if restartPort, err := strconv.Atoi(os.Getenv(restartEnvPort)); err == nil && restartPort > 0 {
+		*port = restartPort
+	}
 	listener, actualPort, err := listenOnFreePort(*port, portAttempts)
 	if err != nil {
 		log.Fatalf("no free port between %d and %d: %v", *port, *port+portAttempts-1, err)
@@ -58,8 +65,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	allowedOrigins := []string{origin, fmt.Sprintf("http://localhost:%d", actualPort)}
 	mux := http.NewServeMux()
-	mux.Handle(proxyPrefix+"/", newProxy(upstream, upstreamPath, proxyPrefix, []string{origin, fmt.Sprintf("http://localhost:%d", actualPort)}))
+	mux.Handle(proxyPrefix+"/", newProxy(upstream, upstreamPath, proxyPrefix, allowedOrigins))
+	newUpdater(updateRepo, actualPort, allowedOrigins).register(mux)
 	mux.Handle("/", newStaticHandler(distFS()))
 
 	server := &http.Server{
@@ -99,6 +108,15 @@ func main() {
 // listenOnFreePort tries preferred, preferred+1, … on 127.0.0.1 only.
 func listenOnFreePort(preferred, attempts int) (net.Listener, int, error) {
 	var lastErr error
+	if os.Getenv(restartEnvPort) != "" {
+		deadline := time.Now().Add(restartBindWindow)
+		for time.Now().Before(deadline) {
+			if ln, err := net.Listen("tcp", net.JoinHostPort("127.0.0.1", strconv.Itoa(preferred))); err == nil {
+				return ln, preferred, nil
+			}
+			time.Sleep(250 * time.Millisecond)
+		}
+	}
 	for i := 0; i < attempts; i++ {
 		port := preferred + i
 		ln, err := net.Listen("tcp", net.JoinHostPort("127.0.0.1", strconv.Itoa(port)))
@@ -130,7 +148,7 @@ func logRequests(next http.Handler) http.Handler {
 		start := time.Now()
 		rec := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
 		next.ServeHTTP(rec, r)
-		if r.URL.Path == "/" || len(r.URL.Path) >= len(proxyPrefix) && r.URL.Path[:len(proxyPrefix)] == proxyPrefix {
+		if r.URL.Path == "/" || strings.HasPrefix(r.URL.Path, proxyPrefix) || strings.HasPrefix(r.URL.Path, "/update/") {
 			log.Printf("%s %s %d %s", r.Method, r.URL.Path, rec.status, time.Since(start).Round(time.Millisecond))
 		}
 	})
