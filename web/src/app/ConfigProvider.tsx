@@ -1,19 +1,40 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
-import { clearConfig, loadConfig, saveConfig } from '@/lib/storage'
+import {
+  clearConfig,
+  loadConfig,
+  loadProfiles,
+  removeProfile,
+  saveConfig,
+  setActiveProfile,
+} from '@/lib/storage'
 import type { AppConfig } from '@/lib/storage'
 
 type ConfigContextValue = {
+  /** The active space, or null when nothing is configured. */
   config: AppConfig | null
-  /** Persists and publishes a new configuration. */
-  save: (config: AppConfig) => void
-  /** Updates a subset of fields of the existing configuration. */
+  /** All configured spaces (multi-space), in the order they were added. */
+  profiles: AppConfig[]
+  /** Persists a space (new or existing) and makes it the active one. */
+  save: (config: AppConfig) => AppConfig
+  /** Updates a subset of fields of the active space. */
   update: (patch: Partial<AppConfig>) => void
+  /** Switches the active space. */
+  switchProfile: (id: string) => void
+  /** Removes a space; the first remaining one becomes active. */
+  remove: (id: string) => void
+  /** Removes every space. */
   clear: () => void
 }
 
 const ConfigContext = createContext<ConfigContextValue | null>(null)
+
+type State = { config: AppConfig | null; profiles: AppConfig[] }
+
+function readState(): State {
+  return { config: loadConfig(), profiles: loadProfiles() }
+}
 
 export function ConfigProvider({
   children,
@@ -22,30 +43,52 @@ export function ConfigProvider({
   children: ReactNode
   initialConfig?: AppConfig | null
 }) {
-  const [config, setConfig] = useState<AppConfig | null>(() =>
-    initialConfig === undefined ? loadConfig() : initialConfig,
-  )
+  const [state, setState] = useState<State>(() => {
+    if (initialConfig === undefined) return readState()
+    return { config: initialConfig, profiles: initialConfig ? [initialConfig] : [] }
+  })
 
   const save = useCallback((next: AppConfig) => {
-    saveConfig(next)
-    setConfig(next)
+    const saved = saveConfig(next)
+    setState(readState())
+    return saved
   }, [])
 
   const update = useCallback((patch: Partial<AppConfig>) => {
-    setConfig((current) => {
-      if (!current) return current
-      const next = { ...current, ...patch }
-      saveConfig(next)
-      return next
+    setState((current) => {
+      if (!current.config) return current
+      saveConfig({ ...current.config, ...patch })
+      return readState()
     })
+  }, [])
+
+  const switchProfile = useCallback((id: string) => {
+    setActiveProfile(id)
+    setState(readState())
+  }, [])
+
+  const remove = useCallback((id: string) => {
+    removeProfile(id)
+    setState(readState())
   }, [])
 
   const clear = useCallback(() => {
     clearConfig()
-    setConfig(null)
+    setState({ config: null, profiles: [] })
   }, [])
 
-  const value = useMemo(() => ({ config, save, update, clear }), [config, save, update, clear])
+  const value = useMemo(
+    () => ({
+      config: state.config,
+      profiles: state.profiles,
+      save,
+      update,
+      switchProfile,
+      remove,
+      clear,
+    }),
+    [state, save, update, switchProfile, remove, clear],
+  )
   return <ConfigContext.Provider value={value}>{children}</ConfigContext.Provider>
 }
 

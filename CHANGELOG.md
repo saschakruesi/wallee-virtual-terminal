@@ -5,6 +5,17 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+### Added
+- Mehrere Spaces: In der Einrichtung lassen sich mehrere Spaces mit eigenen Zugangsdaten und Vorgaben
+  erfassen; oben rechts wechselt ein Dropdown zwischen ihnen, daneben führt ein Einstellungs-Symbol direkt
+  in die Einrichtung.
+- Produktauswahl: Klick ins Produktfeld zeigt sofort die Katalogprodukte, mit Link zur Produktverwaltung.
+
+### Fixed
+- Wortmarke im Einrichtungs-Panel war horizontal verzerrt.
+- Ein begonnener Vorgang übernimmt geänderte Währung und Referenz-Präfix aus den Einstellungen, solange
+  sie im Vorgang nicht selbst geändert wurden.
+
 ## [1.1.0] — 2026-09-19
 
 ### Added

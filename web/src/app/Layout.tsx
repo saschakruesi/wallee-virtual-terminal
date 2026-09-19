@@ -7,6 +7,7 @@ import logo from '@/assets/wallee_logo_turquoise.svg'
 import { APP_VERSION, RELEASES_URL } from '@/lib/version'
 import { isOffline, subscribeConnection } from '@/lib/connection'
 import { useConfig } from './ConfigProvider'
+import { SpaceMenu } from './SpaceMenu'
 
 const NAV = [
   { to: '/', key: 'nav.new', end: true },
@@ -71,7 +72,15 @@ export function Layout() {
             ))}
           </nav>
           <div className="app-header__right">
-            <SpaceChip />
+            <SpaceMenu />
+            <Link
+              to="/setup"
+              className="icon-button"
+              aria-label={t('header.settings')}
+              title={t('header.settings')}
+            >
+              <Icon name="settings" />
+            </Link>
             <span className="wordmark">
               <img src={logo} alt={t('app.wordmarkAlt')} width="86" height="22" />
             </span>
@@ -108,30 +117,5 @@ export function Layout() {
         </span>
       </footer>
     </div>
-  )
-}
-
-/** Space name + PREVIEW badge (orange text, test only); links to the settings. */
-function SpaceChip() {
-  const t = useT()
-  const { config } = useConfig()
-  if (!config) {
-    return (
-      <Link to="/setup" className="space-chip" aria-label={t('header.settings')}>
-        <span className="muted">{t('header.notConnected')}</span>
-        <span aria-hidden="true">·</span>
-        <span>{t('header.setup')}</span>
-        <Icon name="chevron-right" size="sm" />
-      </Link>
-    )
-  }
-  return (
-    <Link to="/setup" className="space-chip" aria-label={t('header.settings')}>
-      <span>{config.spaceName ?? t('header.connectedTo', { space: config.spaceId })}</span>
-      {config.environment === 'PREVIEW' && (
-        <span className="space-chip__env">{t('header.envPreview')}</span>
-      )}
-      <Icon name="chevron-down" size="sm" />
-    </Link>
   )
 }

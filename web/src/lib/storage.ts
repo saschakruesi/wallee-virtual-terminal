@@ -93,6 +93,10 @@ export const COMPLETION_BEHAVIORS: CompletionBehavior[] = [
 ]
 
 export type AppConfig = {
+  /** Profile id (multi-space); assigned on save when missing. */
+  id?: string
+  /** Display name chosen by the employee; falls back to the wallee space name. */
+  label?: string
   userId: string
   authKey: string
   spaceId: string
@@ -111,6 +115,17 @@ export type AppConfig = {
   connectedAt?: string
 }
 
+/** One configured wallee space. `rememberCredentials` lives on the store, not per profile. */
+export type SpaceProfile = Omit<AppConfig, 'rememberCredentials' | 'id'> & { id: string }
+
+/** `wvt.config` since multi-space support: several profiles, one active. */
+export type ConfigStore = {
+  version: 2
+  activeId: string | null
+  rememberCredentials: boolean
+  profiles: SpaceProfile[]
+}
+
 export const DEFAULT_CONFIG: Omit<AppConfig, 'userId' | 'authKey' | 'spaceId'> = {
   environment: 'PREVIEW',
   language: 'de-CH',
@@ -120,7 +135,16 @@ export const DEFAULT_CONFIG: Omit<AppConfig, 'userId' | 'authKey' | 'spaceId'> =
   rememberCredentials: true,
 }
 
-function isConfig(value: unknown): value is AppConfig {
+export function newProfileId(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID()
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+}
+
+export function profileLabel(p: Pick<AppConfig, 'label' | 'spaceName' | 'spaceId'>): string {
+  return p.label?.trim() || p.spaceName?.trim() || `Space ${p.spaceId}`
+}
+
+function isLegacyConfig(value: unknown): value is AppConfig {
   if (!value || typeof value !== 'object') return false
   const c = value as Record<string, unknown>
   return (
@@ -128,21 +152,123 @@ function isConfig(value: unknown): value is AppConfig {
   )
 }
 
-/** Reads the config from localStorage, then sessionStorage (rememberCredentials = false). */
-export function loadConfig(): AppConfig | null {
+function isStore(value: unknown): value is ConfigStore {
+  if (!value || typeof value !== 'object') return false
+  const c = value as Record<string, unknown>
+  return c.version === 2 && Array.isArray(c.profiles)
+}
+
+function normaliseProfile(raw: unknown): SpaceProfile | null {
+  if (!isLegacyConfig(raw)) return null
+  const { rememberCredentials: _remember, ...rest } = raw as AppConfig
+  const { userId, authKey, spaceId, ...defaults } = { ...DEFAULT_CONFIG, ...rest }
+  return {
+    ...defaults,
+    userId,
+    authKey,
+    spaceId,
+    id: typeof rest.id === 'string' && rest.id ? rest.id : newProfileId(),
+  }
+}
+
+function emptyStore(): ConfigStore {
+  return { version: 2, activeId: null, rememberCredentials: true, profiles: [] }
+}
+
+/** Reads the store from localStorage, then sessionStorage; migrates a legacy single config. */
+export function loadStore(): ConfigStore {
   for (const kind of ['local', 'session'] as const) {
     const raw = readJson<unknown>(STORAGE_KEYS.config, null, kind)
-    if (isConfig(raw)) return { ...DEFAULT_CONFIG, ...raw }
+    if (isStore(raw)) {
+      const profiles = raw.profiles
+        .map(normaliseProfile)
+        .filter((p): p is SpaceProfile => p !== null)
+      const activeId = profiles.some((p) => p.id === raw.activeId)
+        ? raw.activeId
+        : (profiles[0]?.id ?? null)
+      return {
+        version: 2,
+        activeId,
+        rememberCredentials: raw.rememberCredentials !== false,
+        profiles,
+      }
+    }
+    if (isLegacyConfig(raw)) {
+      const profile = normaliseProfile(raw)!
+      return {
+        version: 2,
+        activeId: profile.id,
+        rememberCredentials: raw.rememberCredentials !== false,
+        profiles: [profile],
+      }
+    }
   }
-  return null
+  return emptyStore()
 }
 
 /** Writes to the storage matching `rememberCredentials` and removes the other copy. */
-export function saveConfig(config: AppConfig): void {
-  const target: StorageKind = config.rememberCredentials ? 'local' : 'session'
-  const other: StorageKind = config.rememberCredentials ? 'session' : 'local'
-  writeJson(STORAGE_KEYS.config, config, target)
+export function saveStore(store: ConfigStore): void {
+  const target: StorageKind = store.rememberCredentials ? 'local' : 'session'
+  const other: StorageKind = store.rememberCredentials ? 'session' : 'local'
+  writeJson(STORAGE_KEYS.config, store, target)
   removeKey(STORAGE_KEYS.config, other)
+}
+
+function toConfig(store: ConfigStore, profile: SpaceProfile): AppConfig {
+  return { ...DEFAULT_CONFIG, ...profile, rememberCredentials: store.rememberCredentials }
+}
+
+/** The active profile as the flat AppConfig used throughout the app. */
+export function loadConfig(): AppConfig | null {
+  const store = loadStore()
+  const active = store.profiles.find((p) => p.id === store.activeId)
+  return active ? toConfig(store, active) : null
+}
+
+export function loadProfiles(): AppConfig[] {
+  const store = loadStore()
+  return store.profiles.map((p) => toConfig(store, p))
+}
+
+/** Upserts the profile (by id, else by space id), makes it active and stores the remember flag. */
+export function saveConfig(config: AppConfig): AppConfig {
+  const store = loadStore()
+  const { rememberCredentials, id, ...rest } = config
+  const existingIndex = id
+    ? store.profiles.findIndex((p) => p.id === id)
+    : store.profiles.findIndex((p) => p.spaceId === rest.spaceId && p.userId === rest.userId)
+  const profile: SpaceProfile = {
+    ...rest,
+    id: id ?? (existingIndex >= 0 ? store.profiles[existingIndex]!.id : newProfileId()),
+  }
+  if (existingIndex >= 0) store.profiles[existingIndex] = profile
+  else store.profiles.push(profile)
+  store.activeId = profile.id
+  store.rememberCredentials = rememberCredentials
+  saveStore(store)
+  return toConfig(store, profile)
+}
+
+/** Makes another profile active; returns the new active config. */
+export function setActiveProfile(id: string): AppConfig | null {
+  const store = loadStore()
+  if (!store.profiles.some((p) => p.id === id)) return loadConfig()
+  store.activeId = id
+  saveStore(store)
+  return loadConfig()
+}
+
+/** Removes a profile; the first remaining one becomes active. */
+export function removeProfile(id: string): AppConfig | null {
+  const store = loadStore()
+  store.profiles = store.profiles.filter((p) => p.id !== id)
+  if (store.activeId === id) store.activeId = store.profiles[0]?.id ?? null
+  if (store.profiles.length === 0) {
+    clearConfig()
+    return null
+  }
+  saveStore(store)
+  return loadConfig()
 }
 
 export function clearConfig(): void {

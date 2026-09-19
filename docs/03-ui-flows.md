@@ -24,6 +24,9 @@ keine Nebensächlichkeiten auf dem Hauptpfad. Zielgruppe: Rezeption, Backoffice,
   als kleines Badge in Orange-Text nur wenn Test), dann Wortmarke (`assets/brand/wallee_logo_turquoise.svg`,
   Höhe 22 px, Schutzraum ≥ 22 px).
 - Inhalt max. 1120 px breit, zentriert, 40 px Aussenabstand; auf < 900 px einspaltig.
+- **Mehrere Spaces:** Der Space-Chip ist ein Dropdown (`role=menu`) mit allen erfassten Spaces (Name, Space-ID,
+  PREVIEW/Live) und «Space hinzufügen»; ein Wechsel startet einen neuen Vorgangsentwurf. Rechts daneben ein
+  Einstellungs-Symbol (Schieberegler) als Direktlink auf `#/setup`.
 - Statuszeile unten rechts klein grau: Version, «Verbunden mit Space 1234». Kein Logo im Footer.
 - Sprachumschalter (DE/EN) in den Einstellungen und im First-Run.
 
@@ -44,6 +47,12 @@ Ohne gültige Config leiten alle Routen auf `#/setup`.
 ## Screen: Einrichtung (`#/setup`)
 
 Headline: «Einrichtung» / «wallee verbinden».
+
+Oben im Formular eine Chip-Leiste mit allen erfassten Spaces («aktiv» markiert) und «Neuer Space». Jeder Space
+hat eigene Zugangsdaten, Umgebung und Vorgaben sowie eine optionale **Bezeichnung** (Anzeige oben rechts; leer =
+Space-Name aus wallee). «Verbindung testen & speichern» macht den gespeicherten Space aktiv; «Diesen Space
+entfernen» löscht ihn nach Bestätigung aus dem Browser. Speicherung: `wvt.config` als
+`{ version: 2, activeId, rememberCredentials, profiles[] }`, eine ältere Einzel-Konfiguration wird migriert.
 
 Split-Layout: links Türkis-Fläche (40 %) mit kurzer Erklärung in Schwarz («Sie brauchen einen Application
 User mit Berechtigung auf Ihren Space. Anleitung →»), rechts das Formular auf Weiss:
