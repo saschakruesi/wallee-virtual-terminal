@@ -248,7 +248,7 @@ export function CustomerDetailPage() {
       />
 
       <div
-        className="sg-grid"
+        className="sg-grid detail-grid"
         style={{ gridTemplateColumns: 'minmax(0, 5fr) minmax(0, 7fr)', gap: 'var(--s-5)' }}
       >
         <form

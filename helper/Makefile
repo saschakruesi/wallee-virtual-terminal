@@ -12,6 +12,7 @@ GOFLAGS  := -trimpath -buildvcs=false
 export CGO_ENABLED := 0
 
 RELEASE_DIR := ../dist
+RELEASES_URL ?= 
 WEB_DIST    := ../web/dist
 
 .PHONY: build release test clean copy-dist placeholder-dist web
@@ -21,7 +22,7 @@ build: copy-dist
 
 ## Build the frontend first (needs Node), then copy it here for embedding.
 web:
-	cd ../web && VITE_APP_VERSION=$(VERSION) npm run build
+	cd ../web && VITE_APP_VERSION=$(VERSION) VITE_RELEASES_URL=$(RELEASES_URL) npm run build
 
 copy-dist:
 	@test -f $(WEB_DIST)/index.html || { echo "error: $(WEB_DIST)/index.html missing — run 'make web' (or 'npm run build' in web/) first"; exit 1; }

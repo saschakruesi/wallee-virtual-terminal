@@ -23,7 +23,11 @@ jobs:
         working-directory: web
         run: |
           npm ci
-          VITE_APP_VERSION="${GITHUB_REF_NAME}" npm run build
+          npm run lint
+          npm test -- --run
+          VITE_APP_VERSION="${GITHUB_REF_NAME}" \
+          VITE_RELEASES_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases" \
+          npm run build
 
       - uses: actions/setup-go@v5
         with:
@@ -36,11 +40,12 @@ jobs:
         env:
           CGO_ENABLED: '0'
         run: |
+          go vet ./... && go test ./...
           mkdir -p ../out
           LD="-s -w -X main.version=${GITHUB_REF_NAME}"
-          GOOS=darwin  GOARCH=arm64 go build -ldflags "$LD" -o ../out/wallee-virtual-terminal-macos-apple-silicon .
-          GOOS=darwin  GOARCH=amd64 go build -ldflags "$LD" -o ../out/wallee-virtual-terminal-macos-intel .
-          GOOS=windows GOARCH=amd64 go build -ldflags "$LD" -o ../out/wallee-virtual-terminal-windows.exe .
+          GOOS=darwin  GOARCH=arm64 go build -trimpath -buildvcs=false -ldflags "$LD" -o ../out/wallee-virtual-terminal-macos-apple-silicon .
+          GOOS=darwin  GOARCH=amd64 go build -trimpath -buildvcs=false -ldflags "$LD" -o ../out/wallee-virtual-terminal-macos-intel .
+          GOOS=windows GOARCH=amd64 go build -trimpath -buildvcs=false -ldflags "$LD" -o ../out/wallee-virtual-terminal-windows.exe .
           cd ../out && sha256sum * > SHA256SUMS.txt
 
       # --- Optional signing: steps run only when the secrets are configured in the repo ---

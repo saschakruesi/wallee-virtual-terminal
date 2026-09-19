@@ -1,3 +1,3 @@
-module github.com/wallee-payment/wallee-virtual-terminal/helper
+module github.com/saschakruesi/wallee-virtual-terminal/helper
 
 go 1.22

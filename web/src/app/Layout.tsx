@@ -4,7 +4,8 @@ import { getUiSnapshot, subscribeUi } from '@/lib/uiStore'
 import { useT } from '@/i18n'
 import { Icon } from '@/components'
 import logo from '@/assets/wallee_logo_turquoise.svg'
-import { APP_VERSION } from '@/lib/version'
+import { APP_VERSION, RELEASES_URL } from '@/lib/version'
+import { isOffline, subscribeConnection } from '@/lib/connection'
 import { useConfig } from './ConfigProvider'
 
 const NAV = [
@@ -19,6 +20,7 @@ export function Layout() {
   const { config } = useConfig()
   const navigate = useNavigate()
   const ui = useSyncExternalStore(subscribeUi, getUiSnapshot, getUiSnapshot)
+  const offline = useSyncExternalStore(subscribeConnection, isOffline, isOffline)
   const openLinks = ui.openLinkCount ?? 0
 
   // ⌘/Ctrl+N = new transaction, ⌘/Ctrl+K = customer search (docs/03-ui-flows.md «Tastatur»).
@@ -75,11 +77,28 @@ export function Layout() {
           </div>
         </div>
       </header>
+      {offline && (
+        <div className="connection-banner" role="alert">
+          <Icon name="warning" />
+          <span>{t('connection.lost')}</span>
+          <button type="button" className="btn btn--text" onClick={() => window.location.reload()}>
+            {t('connection.retry')}
+          </button>
+        </div>
+      )}
       <main id="main" className="app-main" tabIndex={-1}>
         <Outlet />
       </main>
       <footer className="app-status">
         <span>{t('status.version', { version: APP_VERSION })}</span>
+        {RELEASES_URL && (
+          <>
+            <span aria-hidden="true">·</span>
+            <a href={RELEASES_URL} target="_blank" rel="noopener noreferrer">
+              {t('status.checkUpdate')}
+            </a>
+          </>
+        )}
         <span aria-hidden="true">·</span>
         <span>
           {config

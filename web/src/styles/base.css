@@ -338,3 +338,63 @@ a:hover {
   flex: 1;
   min-width: 220px;
 }
+
+/* Yellow-ish (orange-soft) connection bar under the header */
+.connection-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px var(--page-pad);
+  background: var(--w-orange-soft);
+  color: var(--w-orange-text);
+  font-size: var(--fs-small);
+}
+.connection-banner .btn--text {
+  color: var(--w-orange-text);
+  min-height: 28px;
+}
+
+/* Responsive ≤ 900 px: single column, no horizontal page scroll */
+html,
+body {
+  overflow-x: hidden;
+}
+@media (max-width: 900px) {
+  .app-header__inner {
+    gap: var(--s-2);
+  }
+  .app-nav {
+    gap: var(--s-2);
+  }
+  .space-chip {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .app-main {
+    padding-top: var(--s-3);
+  }
+  .headline {
+    margin-bottom: var(--s-3);
+  }
+  .two-col,
+  .review-grid,
+  .detail-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .stepper {
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .stepper__step span:last-child {
+    white-space: nowrap;
+  }
+}
+@media (max-width: 640px) {
+  .app-header__inner {
+    padding: 0 12px;
+  }
+  .space-chip span:first-child {
+    display: none;
+  }
+}
