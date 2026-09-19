@@ -5,6 +5,10 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+### Added
+- Update-Mechanismus: Prüfung auf neue GitHub-Releases beim Start, Statusleiste oben mit «Update starten»;
+  der Helper lädt, verifiziert (SHA-256), ersetzt sich selbst und startet neu, die Seite lädt automatisch neu.
+
 ## [1.0.0] — 2026-09-19
 
 Erste Version. Abnahme mit einem wallee Test-Space (Testplan T1–T13 in `docs/05-implementationsplan.md`) steht noch aus.
