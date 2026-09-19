@@ -1,6 +1,7 @@
 import { createJwt } from './jwt'
 import type { IatUnit } from './jwt'
 import type { RestApiErrorBody } from './types'
+import { reportConnection } from '@/lib/connection'
 
 /** Where requests go: the helper proxy by default, or the API directly (VITE_API_BASE). */
 export const API_BASE: string = (import.meta.env.VITE_API_BASE || '/wallee').replace(/\/+$/, '')
@@ -186,6 +187,7 @@ export async function request<T>(
       } catch (err) {
         if (options.signal?.aborted)
           throw new WalleeApiError({ status: 0, kind: 'aborted', message: 'aborted' })
+        reportConnection(false)
         if (controller.signal.aborted)
           throw new WalleeApiError({ status: 0, kind: 'timeout', message: 'timeout' })
         throw new WalleeApiError({
@@ -195,6 +197,8 @@ export async function request<T>(
         })
       }
 
+      // Any answer from the helper/upstream means the connection works (502 is the helper reporting the opposite).
+      reportConnection(res.status !== 502 && res.status !== 503 && res.status !== 504)
       if (res.ok) {
         if (res.status === 204) return undefined as T
         if (options.accept === 'text') return (await res.text()) as T
