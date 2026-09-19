@@ -45,7 +45,15 @@ export function NewTransactionPage() {
   const cfg = config! // guarded by RequireConfig
 
   const [draft, setDraft] = useState<Draft>(() => {
-    const restored = (location.state as { draft?: Draft } | null)?.draft ?? loadDraft()
+    const navState = location.state as { draft?: Draft; fresh?: boolean } | null
+    if (navState?.fresh) {
+      clearDraft()
+      return newDraft(
+        cfg,
+        readUiPrefs().lastMode === 'LINK' && cfg.chargeFlowAvailable ? 'LINK' : 'MOTO',
+      )
+    }
+    const restored = navState?.draft ?? loadDraft()
     if (restored) return restored
     const last = readUiPrefs().lastMode
     return newDraft(cfg, last === 'LINK' && cfg.chargeFlowAvailable ? 'LINK' : 'MOTO')
@@ -57,6 +65,19 @@ export function NewTransactionPage() {
   const stepRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => saveDraft(draft), [draft])
+
+  // ⌘/Ctrl+N while already on this screen: start over.
+  const freshKey = (location.state as { freshKey?: number } | null)?.freshKey
+  const [seenFreshKey, setSeenFreshKey] = useState(freshKey)
+  if (freshKey !== seenFreshKey) {
+    setSeenFreshKey(freshKey)
+    if (freshKey !== undefined) {
+      clearDraft()
+      setDraft(newDraft(cfg, draft.mode))
+      setShowErrors(false)
+      setCreateError(null)
+    }
+  }
 
   const update = useCallback((patch: Partial<Draft> | ((d: Draft) => Draft)) => {
     setDraft((d) => (typeof patch === 'function' ? patch(d) : { ...d, ...patch }))

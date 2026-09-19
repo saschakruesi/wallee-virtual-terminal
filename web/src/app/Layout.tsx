@@ -1,4 +1,6 @@
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { useEffect, useSyncExternalStore } from 'react'
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { getUiSnapshot, subscribeUi } from '@/lib/uiStore'
 import { useT } from '@/i18n'
 import { Icon } from '@/components'
 import logo from '@/assets/wallee_logo_turquoise.svg'
@@ -15,6 +17,30 @@ const NAV = [
 export function Layout() {
   const t = useT()
   const { config } = useConfig()
+  const navigate = useNavigate()
+  const ui = useSyncExternalStore(subscribeUi, getUiSnapshot, getUiSnapshot)
+  const openLinks = ui.openLinkCount ?? 0
+
+  // ⌘/Ctrl+N = new transaction, ⌘/Ctrl+K = customer search (docs/03-ui-flows.md «Tastatur»).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey) return
+      const key = e.key.toLowerCase()
+      if (key === 'n' && config) {
+        e.preventDefault()
+        navigate('/', { state: { fresh: true, freshKey: Date.now() } })
+      } else if (key === 'k' && config) {
+        e.preventDefault()
+        const box =
+          document.getElementById('wizard-customer-search') ??
+          document.getElementById('customers-search')
+        if (box) box.focus()
+        else navigate('/customers')
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [config, navigate])
   return (
     <div className="app">
       <a href="#main" className="visually-hidden">
@@ -33,6 +59,11 @@ export function Layout() {
                 }
               >
                 {t(item.key)}
+                {item.to === '/history' && openLinks > 0 && (
+                  <span className="app-nav__count">
+                    · {t('history.openLinks', { count: openLinks })}
+                  </span>
+                )}
               </NavLink>
             ))}
           </nav>

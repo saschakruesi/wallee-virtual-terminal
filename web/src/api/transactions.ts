@@ -228,3 +228,54 @@ export function failureMessage(t: Transaction, lang: string): string | undefined
   const key = Object.keys(d).find((k) => k.toLowerCase().startsWith(lang.toLowerCase().slice(0, 2)))
   return (key && d[key]) || d['en-US'] || Object.values(d)[0]
 }
+
+/* ---------- History: search transactions started by this app ---------- */
+
+import type { ListResponse } from './types'
+
+export const HISTORY_SOURCE = 'wallee-virtual-terminal'
+
+export type HistoryQueryMode = 'metaData' | 'reference'
+
+/** `metaData.source:"wallee-virtual-terminal"` or, as fallback, `merchantReference:~"<prefix>"`. */
+export function buildHistoryQuery(mode: HistoryQueryMode, referencePrefix: string): string {
+  if (mode === 'metaData') return `metaData.source:"${HISTORY_SOURCE}"`
+  const prefix = referencePrefix.replace(/"/g, '\\"')
+  return `merchantReference:~"${prefix}-"`
+}
+
+/** `GET /payment/transactions/search?query=…&order=createdOn:DESC&limit=50&offset=…`. */
+export async function searchTransactions(
+  creds: ApiCredentials,
+  query: string,
+  options: { limit?: number; offset?: number; signal?: AbortSignal } = {},
+): Promise<ListResponse<Transaction>> {
+  const res = await request<ListResponse<Transaction> | Transaction[]>(
+    creds,
+    'GET',
+    `${base}/search`,
+    {
+      query: {
+        query,
+        order: 'createdOn:DESC',
+        limit: options.limit ?? 50,
+        offset: options.offset || undefined,
+      },
+      expand: ['lineItems'],
+      signal: options.signal,
+    },
+  )
+  return Array.isArray(res) ? { data: res } : (res ?? { data: [] })
+}
+
+/** Mode of a transaction from its metadata, else from customersPresence. */
+export function transactionMode(t: Transaction): 'MOTO' | 'LINK' {
+  const m = t.metaData?.mode
+  if (m === 'MOTO' || m === 'LINK') return m
+  return t.customersPresence === 'NOT_PRESENT' ? 'MOTO' : 'LINK'
+}
+
+/** Open = not paid, not failed, not voided (pending links, running MOTO, authorized). */
+export function isOpen(state: TransactionState): boolean {
+  return !isPaid(state) && !isFailed(state) && state !== 'VOIDED'
+}

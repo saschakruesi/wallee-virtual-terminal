@@ -4,7 +4,14 @@ import { useT } from '@/i18n'
 import { Icon } from './Icon'
 
 export type ToastKind = 'success' | 'error' | 'info'
-export type ToastInput = { kind?: ToastKind; title?: string; message: string; durationMs?: number }
+export type ToastAction = { label: string; onClick: () => void }
+export type ToastInput = {
+  kind?: ToastKind
+  title?: string
+  message: string
+  durationMs?: number
+  action?: ToastAction
+}
 type ToastItem = ToastInput & { id: number }
 
 type ToastContextValue = {
@@ -79,6 +86,19 @@ function ToastRegion({
           <div className="toast__body">
             {item.title && <div className="toast__title">{item.title}</div>}
             <div className="toast__message">{item.message}</div>
+            {item.action && (
+              <button
+                type="button"
+                className="btn btn--text"
+                style={{ marginTop: 4, paddingLeft: 0 }}
+                onClick={() => {
+                  item.action?.onClick()
+                  onDismiss(item.id)
+                }}
+              >
+                {item.action.label}
+              </button>
+            )}
           </div>
           <button
             type="button"
