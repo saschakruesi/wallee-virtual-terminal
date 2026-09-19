@@ -5,6 +5,10 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+## [1.0.0] — 2026-09-19
+
+Erste Version. Abnahme mit einem wallee Test-Space (Testplan T1–T13 in `docs/05-implementationsplan.md`) steht noch aus.
+
 ### Added
 - Einrichtung mit Verbindungstest (Space-Name, Charge-Flow-Verfügbarkeit), Umgebung Test/Live, Vorgaben
   für Währung, Sprache, Referenz-Präfix und Abschlussverhalten; Zugangsdaten wahlweise nur für die Sitzung.
@@ -21,3 +25,6 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
   Versionsanzeige mit Link auf die Releases-Seite.
 - Go-Helper als Einzeldatei (macOS Apple Silicon/Intel, Windows) mit eingebettetem Frontend und
   Reverse-Proxy auf app-wallee.com; Release-Workflow mit Prüfsummen und optionalem Code-Signing.
+
+[Unreleased]: https://github.com/saschakruesi/wallee-virtual-terminal/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/saschakruesi/wallee-virtual-terminal/releases/tag/v1.0.0
