@@ -267,10 +267,18 @@ export function sampleProducts(): Product[] {
   ]
 }
 
-/** Active products whose name or SKU contains the text; prefix matches rank first. */
+/**
+ * Active products whose name or SKU contains the text; prefix matches rank first.
+ * An empty text lists the active products alphabetically (used when the field gets focus).
+ */
 export function searchProducts(products: Product[], text: string, limit = 8): Product[] {
   const q = text.trim().toLowerCase()
-  if (!q) return []
+  if (!q) {
+    return products
+      .filter((p) => p.active && p.name.trim())
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .slice(0, limit)
+  }
   const scored = products
     .filter((p) => p.active && p.name.trim())
     .map((p) => {

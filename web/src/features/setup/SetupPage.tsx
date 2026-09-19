@@ -22,17 +22,19 @@ import {
   DEFAULT_CONFIG,
   PAYMENT_LANGUAGES,
   clearAllLocalData,
+  profileLabel,
 } from '@/lib/storage'
 import type { AppConfig, CompletionBehavior, Environment, PaymentLanguage } from '@/lib/storage'
 import { testConnection } from './connectionTest'
-import { CatalogTransfer } from '@/features/products/CatalogTransfer'
 import type { ConnectionResult } from './connectionTest'
 import { describeApiError } from './errorMessages'
+import { CatalogTransfer } from '@/features/products/CatalogTransfer'
 
 const DOC_URL = 'https://app-wallee.com/doc/api/web-service'
 const PREFIX_RE = /^[A-Z0-9-]{1,10}$/
 
 type Form = {
+  label: string
   userId: string
   authKey: string
   spaceId: string
@@ -46,9 +48,10 @@ type Form = {
 
 type Errors = Partial<Record<'userId' | 'authKey' | 'spaceId' | 'merchantReferencePrefix', string>>
 
-function formFromConfig(config: AppConfig | null): Form {
+function formFromConfig(config: AppConfig | null, remember: boolean): Form {
   const c = config ?? { ...DEFAULT_CONFIG, userId: '', authKey: '', spaceId: '' }
   return {
+    label: config?.label ?? '',
     userId: c.userId,
     authKey: '',
     spaceId: c.spaceId,
@@ -57,32 +60,71 @@ function formFromConfig(config: AppConfig | null): Form {
     language: c.language,
     merchantReferencePrefix: c.merchantReferencePrefix,
     completionBehavior: c.completionBehavior,
-    rememberCredentials: c.rememberCredentials,
+    rememberCredentials: remember,
   }
 }
 
+/**
+ * Setup: one form per space. Several spaces can be configured; the chips on top select
+ * which one is edited, «Neuer Space» starts an empty form, and saving makes the space active.
+ */
 export function SetupPage() {
   const { t, lang, setLang } = useI18n()
   const toast = useToast()
   const navigate = useNavigate()
   const location = useLocation()
-  const { config, save, clear } = useConfig()
+  const { config, profiles, save, remove, clear } = useConfig()
+  const wantsNew = new URLSearchParams(location.search).get('new') === '1'
+  const remember = config?.rememberCredentials ?? true
 
-  const [form, setForm] = useState<Form>(() => formFromConfig(config))
+  const [editingId, setEditingId] = useState<string | null>(wantsNew ? null : (config?.id ?? null))
+  const editing = useMemo(
+    () => (editingId ? (profiles.find((p) => p.id === editingId) ?? null) : null),
+    [editingId, profiles],
+  )
+
+  const [form, setForm] = useState<Form>(() => formFromConfig(editing, remember))
   const [errors, setErrors] = useState<Errors>({})
-  const [keyMasked, setKeyMasked] = useState(Boolean(config?.authKey))
+  const [keyMasked, setKeyMasked] = useState(Boolean(editing?.authKey))
   const [showKey, setShowKey] = useState(false)
   const [testing, setTesting] = useState(false)
   const [result, setResult] = useState<ConnectionResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [confirmLive, setConfirmLive] = useState(false)
   const [confirmClear, setConfirmClear] = useState(false)
+  const [confirmRemove, setConfirmRemove] = useState(false)
   const userIdRef = useRef<HTMLInputElement>(null)
   const keyRef = useRef<HTMLInputElement>(null)
 
+  const [formFor, setFormFor] = useState<string | null>(editingId)
+  if (formFor !== editingId) {
+    // Selected space changed: reload the form (state adjustment during render).
+    setFormFor(editingId)
+    setForm(
+      formFromConfig(
+        editingId ? (profiles.find((p) => p.id === editingId) ?? null) : null,
+        remember,
+      ),
+    )
+    setKeyMasked(Boolean(editingId && profiles.some((p) => p.id === editingId && p.authKey)))
+    setErrors({})
+    setResult(null)
+    setError(null)
+  }
+
   useEffect(() => {
-    if (!config) userIdRef.current?.focus()
-  }, [config])
+    if (!editing) userIdRef.current?.focus()
+  }, [editing])
+
+  // «Space hinzufügen» arrives as #/setup?new=1: select the empty form, then drop the query.
+  const [seenNew, setSeenNew] = useState(wantsNew)
+  if (wantsNew !== seenNew) {
+    setSeenNew(wantsNew)
+    if (wantsNew) setEditingId(null)
+  }
+  useEffect(() => {
+    if (wantsNew) navigate('/setup', { replace: true })
+  }, [wantsNew, navigate])
 
   const set = <K extends keyof Form>(key: K, value: Form[K]) => {
     setForm((f) => ({ ...f, [key]: value }))
@@ -110,12 +152,12 @@ export function SetupPage() {
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (testing || !validate()) return
-    const authKey = keyMasked && config ? config.authKey : form.authKey.trim()
+    const authKey = keyMasked && editing ? editing.authKey : form.authKey.trim()
     const creds = {
       userId: form.userId.trim(),
       authKey,
       spaceId: form.spaceId.trim(),
-      iatUnit: keyMasked ? config?.iatUnit : undefined,
+      iatUnit: keyMasked ? editing?.iatUnit : undefined,
     }
     setTesting(true)
     setError(null)
@@ -129,6 +171,8 @@ export function SetupPage() {
           ? res.space.primaryCurrency
           : form.currency
       const next: AppConfig = {
+        id: editing?.id,
+        label: form.label.trim() || undefined,
         userId: creds.userId,
         authKey: creds.authKey,
         spaceId: creds.spaceId,
@@ -144,7 +188,9 @@ export function SetupPage() {
         chargeFlowAvailable: (res.activeChargeFlows ?? 0) > 0,
         connectedAt: new Date().toISOString(),
       }
-      save(next)
+      const saved = save(next)
+      setEditingId(saved.id ?? null)
+      setFormFor(saved.id ?? null)
       setForm((f) => ({ ...f, currency, authKey: '' }))
       setKeyMasked(true)
       setShowKey(false)
@@ -167,14 +213,20 @@ export function SetupPage() {
     else set('environment', value)
   }
 
+  const onRemove = () => {
+    if (!editing) return
+    const name = profileLabel(editing)
+    remove(editing.id!)
+    setConfirmRemove(false)
+    setEditingId(null)
+    toast.success(t('setup.spaces.removed'), name)
+  }
+
   const onClearAll = () => {
     clearAllLocalData()
     clear()
     setConfirmClear(false)
-    setForm(formFromConfig(null))
-    setKeyMasked(false)
-    setResult(null)
-    setError(null)
+    setEditingId(null)
     toast.success(t('setup.danger.cleared'))
   }
 
@@ -190,7 +242,13 @@ export function SetupPage() {
           <div
             style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-4)', height: '100%' }}
           >
-            <img src={logoWhite} alt={t('app.wordmarkAlt')} style={{ height: 40, width: 'auto' }} />
+            <img
+              src={logoWhite}
+              alt={t('app.wordmarkAlt')}
+              className="panel-logo"
+              width="156"
+              height="40"
+            />
             <p className="statement">{t('setup.intro')}</p>
             <p>{t('setup.guide')}</p>
             <p>
@@ -210,12 +268,61 @@ export function SetupPage() {
           <form
             onSubmit={onSubmit}
             noValidate
-            className="stack"
             style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-3)' }}
           >
+            {(profiles.length > 0 || editing === null) && (
+              <div className="field">
+                <span className="field__label">{t('setup.spaces.title')}</span>
+                <div className="space-chips" role="tablist" aria-label={t('setup.spaces.title')}>
+                  {profiles.map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={p.id === editingId}
+                      className={['space-chips__item', p.id === editingId ? 'is-selected' : '']
+                        .join(' ')
+                        .trim()}
+                      onClick={() => setEditingId(p.id!)}
+                    >
+                      {profileLabel(p)}
+                      {p.id === config?.id && (
+                        <span className="small muted"> · {t('setup.spaces.active')}</span>
+                      )}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={editingId === null}
+                    className={['space-chips__item', editingId === null ? 'is-selected' : '']
+                      .join(' ')
+                      .trim()}
+                    onClick={() => setEditingId(null)}
+                  >
+                    <Icon name="plus" size="sm" />
+                    {t('setup.spaces.new')}
+                  </button>
+                </div>
+                <span className="field__hint">{t('setup.spaces.hint')}</span>
+              </div>
+            )}
+
             <h2 className="section-title" style={{ marginBottom: 0 }}>
-              {t('setup.section.credentials')}
+              {editing
+                ? t('setup.spaces.editing', { name: profileLabel(editing) })
+                : profiles.length > 0
+                  ? t('setup.spaces.newTitle')
+                  : t('setup.section.credentials')}
             </h2>
+            <Input
+              label={t('setup.label')}
+              hint={t('setup.label.hint')}
+              value={form.label}
+              maxLength={40}
+              onChange={(e) => set('label', e.target.value)}
+              autoComplete="off"
+            />
             <Input
               ref={userIdRef}
               label={t('setup.userId')}
@@ -271,7 +378,7 @@ export function SetupPage() {
                 }
               />
             )}
-            {!keyMasked && config?.authKey && (
+            {!keyMasked && editing?.authKey && (
               <div style={{ marginTop: 'calc(-1 * var(--s-2))' }}>
                 <Button
                   variant="text"
@@ -404,6 +511,13 @@ export function SetupPage() {
             <Button type="submit" size="lg" block loading={testing}>
               {testing ? t('setup.testing') : t('setup.submit')}
             </Button>
+            {editing && (
+              <div>
+                <Button variant="danger" onClick={() => setConfirmRemove(true)}>
+                  {t('setup.spaces.remove')}
+                </Button>
+              </div>
+            )}
 
             <hr className="hairline" style={{ margin: 'var(--s-2) 0 0' }} />
             <h2 className="section-title" style={{ marginBottom: 0 }}>
@@ -436,6 +550,15 @@ export function SetupPage() {
           setConfirmLive(false)
         }}
         onCancel={() => setConfirmLive(false)}
+      />
+      <ConfirmDialog
+        open={confirmRemove}
+        title={t('setup.spaces.removeTitle')}
+        message={t('setup.spaces.removeMessage', { name: editing ? profileLabel(editing) : '' })}
+        confirmLabel={t('setup.spaces.remove')}
+        danger
+        onConfirm={onRemove}
+        onCancel={() => setConfirmRemove(false)}
       />
       <ConfirmDialog
         open={confirmClear}

@@ -15,6 +15,7 @@ export type IconName =
   | 'chevron-down'
   | 'chevron-right'
   | 'trash'
+  | 'settings'
 
 /** Minimal monochrome line icons (1.5 px), 20 px grid. */
 const PATHS: Record<IconName, string> = {
@@ -34,6 +35,7 @@ const PATHS: Record<IconName, string> = {
   'chevron-down': 'M5 8l5 5 5-5',
   'chevron-right': 'M8 5l5 5-5 5',
   trash: 'M4 6h12M8 6V4h4v2M6 6l.7 10h6.6L14 6M8.5 9v4M11.5 9v4',
+  settings: 'M3 5.5h14M3 10h14M3 14.5h14M7.5 3.5v4M12.5 8v4M6 12.5v4',
 }
 
 type Props = SVGProps<SVGSVGElement> & {

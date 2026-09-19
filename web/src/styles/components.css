@@ -1053,3 +1053,54 @@ button.stepper__step:hover .stepper__circle {
   top: calc(100% - 22px);
   background: var(--w-bg);
 }
+.product-picker__footer a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  font-size: var(--fs-small);
+  color: var(--w-turquoise-text);
+  background: var(--w-bg-soft);
+}
+.product-picker__footer a:hover {
+  text-decoration: underline;
+}
+.product-picker {
+  position: relative;
+  flex: 1;
+  min-width: 260px;
+  max-width: 560px;
+}
+.product-picker__list {
+  min-width: min(420px, calc(100vw - 2 * var(--page-pad)));
+}
+
+/* ---------- Space chips on the setup screen ---------- */
+.space-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+}
+.space-chips__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--w-line);
+  border-radius: var(--r-sm);
+  color: var(--w-text);
+  font-size: var(--fs-small);
+}
+.space-chips__item:hover {
+  background: var(--w-bg-soft);
+}
+.space-chips__item.is-selected {
+  background: var(--w-black);
+  border-color: var(--w-black);
+  color: #fff;
+  font-weight: 500;
+}
+.space-chips__item.is-selected .muted {
+  color: rgba(255, 255, 255, 0.7);
+}

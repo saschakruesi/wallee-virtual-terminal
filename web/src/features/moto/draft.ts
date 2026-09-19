@@ -63,6 +63,10 @@ export type Draft = {
   currency: string
   reference: string
   note: string
+  /** True once the employee changed the currency in the wizard; otherwise the setting applies. */
+  currencyTouched?: boolean
+  /** True once the employee edited the reference; otherwise the current prefix is used. */
+  referenceTouched?: boolean
 }
 
 export const SWISS_TAX_RATES = [8.1, 3.8, 2.6, 0] as const
@@ -125,6 +129,25 @@ export function newDraft(
     reference: suggestReference(config.merchantReferencePrefix),
     note: '',
   }
+}
+
+/**
+ * A restored draft follows the current settings unless the employee overrode them in the
+ * wizard: currency and reference prefix come from the configuration.
+ */
+export function applyConfigDefaults(
+  draft: Draft,
+  config: Pick<AppConfig, 'currency' | 'merchantReferencePrefix'>,
+): Draft {
+  const next = { ...draft }
+  if (!draft.currencyTouched) next.currency = config.currency
+  if (
+    !draft.referenceTouched &&
+    !draft.reference.startsWith(`${config.merchantReferencePrefix}-`)
+  ) {
+    next.reference = suggestReference(config.merchantReferencePrefix)
+  }
+  return next
 }
 
 /* ---------- Merchant reference: <prefix>-<year>-<000001>, counter per prefix in wvt.ui ---------- */

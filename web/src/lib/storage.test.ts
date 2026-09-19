@@ -5,8 +5,12 @@ import {
   clearAllLocalData,
   clearConfig,
   loadConfig,
+  loadProfiles,
+  profileLabel,
   readJson,
+  removeProfile,
   saveConfig,
+  setActiveProfile,
   updateUiPrefs,
   writeJson,
 } from './storage'
@@ -29,7 +33,7 @@ describe('config storage', () => {
     saveConfig(base)
     expect(window.localStorage.getItem(STORAGE_KEYS.config)).toContain('"userId":"1"')
     expect(window.sessionStorage.getItem(STORAGE_KEYS.config)).toBeNull()
-    expect(loadConfig()).toEqual(base)
+    expect(loadConfig()).toMatchObject(base)
   })
 
   it('moves to sessionStorage when not remembered and back again', () => {
@@ -67,5 +71,38 @@ describe('config storage', () => {
     clearAllLocalData()
     expect(window.localStorage.getItem(STORAGE_KEYS.ui)).toBeNull()
     expect(window.localStorage.getItem('other.key')).toBe('keep')
+  })
+})
+
+describe('multi-space store', () => {
+  it('migrates a legacy single config into one profile', () => {
+    window.localStorage.setItem(STORAGE_KEYS.config, JSON.stringify({ ...base, spaceName: 'Alt' }))
+    const cfg = loadConfig()!
+    expect(cfg.spaceName).toBe('Alt')
+    expect(cfg.id).toBeTruthy()
+    expect(loadProfiles()).toHaveLength(1)
+  })
+
+  it('keeps several profiles, switches and removes them', () => {
+    const a = saveConfig({ ...base, spaceId: '1', spaceName: 'Eins' })
+    const b = saveConfig({ ...base, spaceId: '2', spaceName: 'Zwei', currency: 'EUR' })
+    expect(loadProfiles().map((p) => p.spaceName)).toEqual(['Eins', 'Zwei'])
+    expect(loadConfig()?.spaceId).toBe('2')
+    setActiveProfile(a.id!)
+    expect(loadConfig()?.spaceId).toBe('1')
+    // Re-saving the same space (same id) updates instead of duplicating.
+    saveConfig({ ...b, label: 'Hotel Zwei' })
+    expect(loadProfiles()).toHaveLength(2)
+    expect(profileLabel(loadConfig()!)).toBe('Hotel Zwei')
+    expect(removeProfile(b.id!)?.spaceId).toBe('1')
+    expect(loadProfiles()).toHaveLength(1)
+    expect(removeProfile(a.id!)).toBeNull()
+    expect(loadConfig()).toBeNull()
+  })
+
+  it('stores the whole set in sessionStorage when credentials are not remembered', () => {
+    saveConfig({ ...base, rememberCredentials: false })
+    expect(window.localStorage.getItem(STORAGE_KEYS.config)).toBeNull()
+    expect(JSON.parse(window.sessionStorage.getItem(STORAGE_KEYS.config)!).version).toBe(2)
   })
 })

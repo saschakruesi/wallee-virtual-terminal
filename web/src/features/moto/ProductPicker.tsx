@@ -1,4 +1,5 @@
 import { useId, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useT } from '@/i18n'
 import { Icon, Input } from '@/components'
 import { searchProducts } from '@/lib/catalog'
@@ -8,15 +9,21 @@ import { useCatalog } from '@/features/products/useCatalog'
 
 type Props = { onPick: (product: Product) => void }
 
-/** Autocomplete over the local catalogue; Enter adds the highlighted (or first) result. */
+/**
+ * Autocomplete over the local catalogue. Focusing the field already lists the products
+ * (no typing needed); typing filters; Enter adds the highlighted (or first) result.
+ * The list ends with a link to the products screen; the draft survives the round trip.
+ */
 export function ProductPicker({ onPick }: Props) {
   const t = useT()
   const [products] = useCatalog()
   const [text, setText] = useState('')
   const [active, setActive] = useState(0)
+  const [open, setOpen] = useState(false)
   const listId = useId()
   const results = useMemo(() => searchProducts(products, text), [products, text])
   const empty = products.length === 0
+  const show = open
 
   const pick = (p: Product) => {
     onPick(p)
@@ -25,31 +32,28 @@ export function ProductPicker({ onPick }: Props) {
   }
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div className="product-picker">
       <Input
         label={t('items.productSearch')}
         placeholder={t('items.productSearch')}
-        hint={
-          empty
-            ? t('items.productSearch.hint').replace('Phase 6', 'Produkte')
-            : text.trim()
-              ? undefined
-              : t('items.productSearch.hintCatalog')
-        }
-        disabled={empty}
+        hint={!show && !text.trim() ? t('items.productSearch.hintCatalog') : undefined}
         value={text}
         autoComplete="off"
         role="combobox"
-        aria-expanded={results.length > 0}
+        aria-expanded={show}
         aria-controls={listId}
         aria-autocomplete="list"
+        onFocus={() => setOpen(true)}
+        onBlur={() => setOpen(false)}
         onChange={(e) => {
           setText(e.target.value)
           setActive(0)
+          setOpen(true)
         }}
         onKeyDown={(e) => {
           if (e.key === 'ArrowDown') {
             e.preventDefault()
+            setOpen(true)
             setActive((a) => Math.min(results.length - 1, a + 1))
           } else if (e.key === 'ArrowUp') {
             e.preventDefault()
@@ -61,6 +65,7 @@ export function ProductPicker({ onPick }: Props) {
             if (p) pick(p)
           } else if (e.key === 'Escape') {
             setText('')
+            setOpen(false)
           }
         }}
         trailing={
@@ -69,14 +74,19 @@ export function ProductPicker({ onPick }: Props) {
           </span>
         }
       />
-      {text.trim() && !empty && (
+      {show && (
         <ul
           id={listId}
           role="listbox"
           aria-label={t('items.productSearch.results')}
           className="result-list-ul product-picker__list"
         >
-          {results.length === 0 && (
+          {empty && (
+            <li className="small muted" style={{ padding: '10px 12px' }}>
+              {t('items.productSearch.empty')}
+            </li>
+          )}
+          {!empty && results.length === 0 && (
             <li className="small muted" style={{ padding: '10px 12px' }}>
               {t('items.productSearch.none')}
             </li>
@@ -99,6 +109,12 @@ export function ProductPicker({ onPick }: Props) {
               </button>
             </li>
           ))}
+          <li className="product-picker__footer">
+            <Link to="/products" onMouseDown={(e) => e.preventDefault()}>
+              <Icon name="plus" size="sm" />
+              {empty ? t('items.productSearch.create') : t('items.productSearch.manage')}
+            </Link>
+          </li>
         </ul>
       )}
     </div>

@@ -98,6 +98,6 @@ describe('searchProducts', () => {
     ]
     expect(searchProducts(list, 'fr').map((p) => p.sku)).toEqual(['FR', 'KF'])
     expect(searchProducts(list, 'dz').map((p) => p.sku)).toEqual(['DZ'])
-    expect(searchProducts(list, '')).toEqual([])
+    expect(searchProducts(list, '').map((p) => p.sku)).toEqual(['DZ', 'FR', 'KF'])
   })
 })
