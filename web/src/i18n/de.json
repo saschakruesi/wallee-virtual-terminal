@@ -440,5 +440,13 @@
   "history.mode.LINK": "Link",
   "history.openLinks": "{count} offen",
   "shortcut.new": "Neuer Vorgang (⌘/Ctrl+N)",
-  "shortcut.search": "Kundensuche (⌘/Ctrl+K)"
+  "shortcut.search": "Kundensuche (⌘/Ctrl+K)",
+  "error.conflict": "Die Daten wurden inzwischen an anderer Stelle geändert (409). Bitte neu laden und erneut versuchen.",
+  "error.validation": "wallee hat die Eingabe abgelehnt: {message}",
+  "error.rateLimited": "Zu viele Anfragen an wallee (429). Bitte einen Moment warten und erneut versuchen.",
+  "error.server": "wallee meldet einen Serverfehler (HTTP {status}). Bitte später erneut versuchen.",
+  "error.aborted": "Die Anfrage wurde abgebrochen.",
+  "connection.lost": "Keine Verbindung zu wallee",
+  "connection.retry": "Erneut versuchen",
+  "status.checkUpdate": "Auf neue Version prüfen"
 }

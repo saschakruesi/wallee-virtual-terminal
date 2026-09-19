@@ -3,7 +3,7 @@
 Sieben Phasen, jede mit «Definition of Done». Reihenfolge einhalten; Phase 1–3 ergeben bereits ein
 brauchbares MOTO-Werkzeug, Phase 4 bringt den Zahlungslink, 5–6 die Stammdaten, 7 den Release.
 
-**Aktuelle Phase: 6 → 7** (Claude Code aktualisiert diese Zeile beim Abschluss jeder Phase. Phase 1–5 gemerged. Phase 6 am 18.09.2026 implementiert, Branch `phase-6-products-history`. DoD-Abnahme der Phasen 2–6 mit Test-Space-Credentials steht aus; T10 (Export → localStorage löschen → Import) ist per Unit-Test abgedeckt.)
+**Aktuelle Phase: 7** (Claude Code aktualisiert diese Zeile beim Abschluss jeder Phase. Phase 1–6 gemerged. Phase 7 am 19.09.2026 implementiert, Branch `phase-7-release`, Repository https://github.com/saschakruesi/wallee-virtual-terminal. Offen: DoD-Abnahme der Phasen 2–7 mit Test-Space-Credentials, Tag `v1.0.0` und Test auf frischen Maschinen.)
 
 Voraussetzungen für die Entwicklung: Node 20+, Go 1.22+, ein wallee **Test-Space** mit Application User,
 Test-Connector und einem aktiven Charge Flow (Level «E-Mail»). Credentials nur lokal in `.env.local`

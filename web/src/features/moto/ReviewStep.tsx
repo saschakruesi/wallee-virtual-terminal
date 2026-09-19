@@ -30,7 +30,10 @@ export function ReviewStep({ draft, totals, config, creating, error, onStart, on
 
   return (
     <div className="stack">
-      <div className="sg-grid" style={{ gridTemplateColumns: '2fr 3fr', gap: 'var(--s-4)' }}>
+      <div
+        className="sg-grid review-grid"
+        style={{ gridTemplateColumns: '2fr 3fr', gap: 'var(--s-4)' }}
+      >
         <section>
           <div className="row" style={{ justifyContent: 'space-between' }}>
             <h2 className="section-title" style={{ marginBottom: 0 }}>

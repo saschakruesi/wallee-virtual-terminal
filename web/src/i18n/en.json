@@ -440,5 +440,13 @@
   "history.mode.LINK": "Link",
   "history.openLinks": "{count} open",
   "shortcut.new": "New transaction (⌘/Ctrl+N)",
-  "shortcut.search": "Customer search (⌘/Ctrl+K)"
+  "shortcut.search": "Customer search (⌘/Ctrl+K)",
+  "error.conflict": "The data was changed elsewhere in the meantime (409). Reload and try again.",
+  "error.validation": "wallee rejected the input: {message}",
+  "error.rateLimited": "Too many requests to wallee (429). Wait a moment and try again.",
+  "error.server": "wallee reports a server error (HTTP {status}). Try again later.",
+  "error.aborted": "The request was cancelled.",
+  "connection.lost": "No connection to wallee",
+  "connection.retry": "Retry",
+  "status.checkUpdate": "Check for a new version"
 }
