@@ -74,7 +74,9 @@ describe('LinkPage', () => {
     setup()
     expect((await screen.findAllByText('gast@example.com')).length).toBeGreaterThan(0)
     expect(await screen.findByText('E-Mail')).toBeInTheDocument()
-    expect(screen.getByText('https://app-wallee.com/s/1/payment/link/42')).toBeInTheDocument()
+    expect(
+      await screen.findByText('https://app-wallee.com/s/1/payment/link/42'),
+    ).toBeInTheDocument()
     expect(screen.getByText('Ausstehend')).toBeInTheDocument()
     expect(screen.getAllByText('Link gesendet').length).toBeGreaterThan(0)
   })
