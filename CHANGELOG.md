@@ -5,6 +5,8 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+## [1.1.0] — 2026-09-19
+
 ### Added
 - Update-Mechanismus: Prüfung auf neue GitHub-Releases beim Start, Statusleiste oben mit «Update starten»;
   der Helper lädt, verifiziert (SHA-256), ersetzt sich selbst und startet neu, die Seite lädt automatisch neu.
@@ -30,5 +32,6 @@ Erste Version. Abnahme mit einem wallee Test-Space (Testplan T1–T13 in `docs/0
 - Go-Helper als Einzeldatei (macOS Apple Silicon/Intel, Windows) mit eingebettetem Frontend und
   Reverse-Proxy auf app-wallee.com; Release-Workflow mit Prüfsummen und optionalem Code-Signing.
 
-[Unreleased]: https://github.com/saschakruesi/wallee-virtual-terminal/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/saschakruesi/wallee-virtual-terminal/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/saschakruesi/wallee-virtual-terminal/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/saschakruesi/wallee-virtual-terminal/releases/tag/v1.0.0
