@@ -134,6 +134,25 @@ mit dem Apple Developer ID (Notarisierung) und einem Windows-Code-Signing-Zertif
 Release-Workflow bekommt dafür vorbereitete, per Secret aktivierbare Schritte (`codesign`/`notarytool`,
 `signtool`), die ohne Secrets übersprungen werden. Das README beschreibt den Workaround für unsignierte Builds.
 
+## Update-Mechanismus (seit 1.1.0)
+
+Der Helper prüft auf Anfrage des Frontends, ob auf GitHub ein neueres Release existiert, und kann sich
+selbst ersetzen. Das ist die einzige Ausnahme von «der Helper ist dumm» und bewusst eng gefasst:
+
+| Endpunkt | Zweck |
+|---|---|
+| `GET /update/check` | `api.github.com/repos/<repo>/releases/latest` (1 h Cache), Vergleich mit der einkompilierten Version (SemVer); Antwort `{ current, latest, updateAvailable, assetName, assetSize, releaseUrl, notes }` |
+| `POST /update/start` `{ "tag": "v1.1.0" }` | Lädt das Asset für `GOOS/GOARCH` von `github.com/<repo>/releases/download/<tag>/`, prüft es gegen `SHA256SUMS.txt` desselben Releases, ersetzt die laufende Datei (Unix: atomares `rename`; Windows: alte Datei nach `.old`), startet neu auf demselben Port |
+| `GET /update/status` | `{ state: downloading\|verifying\|installing\|restarting\|error, received, total, message }` für die Statusleiste |
+| `GET /update/version` | Erkennung des Neustarts durch das Frontend |
+
+Regeln: nur das einkompilierte Repository (`-X main.updateRepo=owner/repo`), nur Tags, die neuer sind als die
+laufende Version (kein Downgrade), Prüfsumme muss stimmen, derselbe Origin-Check wie beim Proxy,
+Entwicklungs-Builds (`dev`) aktualisieren nie. Das Frontend zeigt beim Start eine Leiste oben mit
+«Update starten» (Bestätigungsdialog), verfolgt den Fortschritt, wartet auf die neue Version und lädt neu.
+Nach dem Neustart wartet der Helper bis zu 15 s auf den bisherigen Port (`WVT_RESTART_PORT`), damit die
+Seite unter derselben Adresse zurückkommt.
+
 ## Sicherheitsüberlegungen
 
 - Helper bindet ausschliesslich `127.0.0.1`. Kein `0.0.0.0`.

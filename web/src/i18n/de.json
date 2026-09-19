@@ -448,5 +448,22 @@
   "error.aborted": "Die Anfrage wurde abgebrochen.",
   "connection.lost": "Keine Verbindung zu wallee",
   "connection.retry": "Erneut versuchen",
-  "status.checkUpdate": "Auf neue Version prüfen"
+  "status.checkUpdate": "Auf neue Version prüfen",
+  "update.available": "Neue Version {latest} verfügbar (installiert: {current})",
+  "update.start": "Update starten",
+  "update.later": "Später",
+  "update.notes": "Was ist neu",
+  "update.confirmTitle": "Update auf die neue Version starten?",
+  "update.confirmMessage": "Das Programm lädt die neue Version von GitHub herunter, prüft die Prüfsumme, ersetzt sich selbst und startet neu. Diese Seite lädt danach automatisch neu. Laufende Vorgänge bleiben in wallee erhalten und sind unter «Vorgänge» wieder sichtbar.",
+  "update.updatingTo": "Update auf {target}",
+  "update.step.downloading": "Wird heruntergeladen…",
+  "update.step.downloadingPercent": "Wird heruntergeladen… {percent} %",
+  "update.step.verifying": "Prüfsumme wird geprüft…",
+  "update.step.installing": "Wird installiert…",
+  "update.step.restarting": "Programm startet neu…",
+  "update.step.waiting": "Warten auf die neue Version…",
+  "update.done": "Update auf {target} abgeschlossen — Seite wird neu geladen.",
+  "update.failed": "Update fehlgeschlagen:",
+  "update.manual": "Manuell herunterladen",
+  "update.error.timeout": "Das Programm hat sich nach dem Update nicht zurückgemeldet. Bitte das Programm von Hand neu starten."
 }

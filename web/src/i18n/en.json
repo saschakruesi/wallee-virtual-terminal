@@ -448,5 +448,22 @@
   "error.aborted": "The request was cancelled.",
   "connection.lost": "No connection to wallee",
   "connection.retry": "Retry",
-  "status.checkUpdate": "Check for a new version"
+  "status.checkUpdate": "Check for a new version",
+  "update.available": "New version {latest} available (installed: {current})",
+  "update.start": "Start update",
+  "update.later": "Later",
+  "update.notes": "What's new",
+  "update.confirmTitle": "Start the update to the new version?",
+  "update.confirmMessage": "The program downloads the new version from GitHub, verifies the checksum, replaces itself and restarts. This page then reloads automatically. Running transactions are kept in wallee and remain visible under “Transactions”.",
+  "update.updatingTo": "Updating to {target}",
+  "update.step.downloading": "Downloading…",
+  "update.step.downloadingPercent": "Downloading… {percent} %",
+  "update.step.verifying": "Verifying checksum…",
+  "update.step.installing": "Installing…",
+  "update.step.restarting": "Program is restarting…",
+  "update.step.waiting": "Waiting for the new version…",
+  "update.done": "Update to {target} complete — reloading the page.",
+  "update.failed": "Update failed:",
+  "update.manual": "Download manually",
+  "update.error.timeout": "The program did not come back after the update. Please start it again by hand."
 }

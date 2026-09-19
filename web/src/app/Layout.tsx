@@ -2,7 +2,7 @@ import { useEffect, useSyncExternalStore } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { getUiSnapshot, subscribeUi } from '@/lib/uiStore'
 import { useT } from '@/i18n'
-import { Icon } from '@/components'
+import { Icon, UpdateBanner } from '@/components'
 import logo from '@/assets/wallee_logo_turquoise.svg'
 import { APP_VERSION, RELEASES_URL } from '@/lib/version'
 import { isOffline, subscribeConnection } from '@/lib/connection'
@@ -48,6 +48,7 @@ export function Layout() {
       <a href="#main" className="visually-hidden">
         {t('app.skipToContent')}
       </a>
+      <UpdateBanner />
       <header className="app-header">
         <div className="app-header__inner">
           <nav className="app-nav" aria-label={t('nav.label')}>

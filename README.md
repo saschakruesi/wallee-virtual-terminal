@@ -101,9 +101,10 @@ bleiben in wallee erhalten und sind unter «Vorgänge» wieder sichtbar.
 **Zahlung «Autorisiert» statt «Bezahlt».** Bei der Einstellung «Nur autorisieren» ist der Betrag reserviert.
 «Jetzt abbuchen» schliesst die Zahlung ab; «Abbrechen» gibt die Reservation frei.
 
-**Neue Version?** Die Statuszeile unten zeigt die installierte Version und einen Link auf die Releases-Seite.
-Das Programm aktualisiert sich nicht selbst: neue Datei herunterladen, alte ersetzen — die Einstellungen
-bleiben erhalten.
+**Neue Version?** Beim Start prüft das Programm, ob auf GitHub ein neueres Release vorliegt, und zeigt dann
+oben eine Leiste «Neue Version … verfügbar». Mit **«Update starten»** lädt es die neue Datei herunter, prüft
+die Prüfsumme, ersetzt sich selbst und startet neu; die Seite lädt automatisch neu, Ihre Einstellungen bleiben
+erhalten. Klappt das nicht (z.B. weil der Ordner schreibgeschützt ist), bleibt der Link «Manuell herunterladen».
 
 ## Für Entwickler
 
