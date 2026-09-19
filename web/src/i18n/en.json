@@ -465,5 +465,8 @@
   "update.done": "Update to {target} complete — reloading the page.",
   "update.failed": "Update failed:",
   "update.manual": "Download manually",
-  "update.error.timeout": "The program did not come back after the update. Please start it again by hand."
+  "update.error.timeout": "The program did not come back after the update. Please start it again by hand.",
+  "items.productSearch.empty": "No products in the catalogue yet — create or import them under “Products”.",
+  "items.productSearch.manage": "Manage products",
+  "items.productSearch.create": "Create products"
 }

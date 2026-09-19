@@ -230,14 +230,14 @@ export function ItemsStep({ draft, totals, validation, showErrors, onChange }: P
             <Select
               label={t('items.currency')}
               value={draft.currency}
-              onChange={(e) => onChange({ currency: e.target.value })}
+              onChange={(e) => onChange({ currency: e.target.value, currencyTouched: true })}
               options={CURRENCIES.map((c) => ({ value: c, label: c }))}
             />
             <Input
               label={t('items.reference')}
               value={draft.reference}
               maxLength={100}
-              onChange={(e) => onChange({ reference: e.target.value })}
+              onChange={(e) => onChange({ reference: e.target.value, referenceTouched: true })}
             />
           </div>
           <Input

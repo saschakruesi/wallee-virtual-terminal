@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { act, render, screen } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { App } from '@/app/App'
 import { readCatalog } from '@/lib/catalog'
@@ -43,6 +43,14 @@ describe('ProductsPage', () => {
     await user.click(screen.getByRole('button', { name: 'Ohne Kundenprofil weiter' }))
     await user.click(screen.getByRole('button', { name: 'Weiter' }))
     const picker = screen.getByRole('combobox', { name: 'Produkt hinzufügen…' })
+    await user.click(picker)
+    expect(
+      within(screen.getByRole('listbox', { name: 'Produkte' })).getAllByRole('option'),
+    ).toHaveLength(3)
+    expect(screen.getByRole('link', { name: 'Produkte verwalten' })).toHaveAttribute(
+      'href',
+      '#/products',
+    )
     await user.type(picker, 'dz{Enter}')
     expect(screen.getByLabelText('Bezeichnung 1')).toHaveValue('Doppelzimmer 1 Nacht')
     expect(screen.getByLabelText('Menge 1')).toHaveFocus()

@@ -464,3 +464,15 @@ body {
   background: var(--w-black);
   transition: width 200ms linear;
 }
+
+/* Wordmark inside flex containers: never stretch, keep the 596:153 aspect ratio */
+.wordmark img,
+.panel-logo {
+  align-self: flex-start;
+  flex: none;
+}
+.panel-logo {
+  height: 40px;
+  width: auto;
+  aspect-ratio: 596 / 153;
+}

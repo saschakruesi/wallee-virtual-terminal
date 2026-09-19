@@ -12,6 +12,7 @@ import { addRecent } from '@/lib/recent'
 import { describeApiError } from '@/features/setup/errorMessages'
 import { isWalleeApiError } from '@/api/client'
 import {
+  applyConfigDefaults,
   buildTransactionCreate,
   clearDraft,
   computeTotals,
@@ -54,7 +55,7 @@ export function NewTransactionPage() {
       )
     }
     const restored = navState?.draft ?? loadDraft()
-    if (restored) return restored
+    if (restored) return applyConfigDefaults(restored, cfg)
     const last = readUiPrefs().lastMode
     return newDraft(cfg, last === 'LINK' && cfg.chargeFlowAvailable ? 'LINK' : 'MOTO')
   })

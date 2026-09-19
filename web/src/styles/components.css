@@ -1053,3 +1053,24 @@ button.stepper__step:hover .stepper__circle {
   top: calc(100% - 22px);
   background: var(--w-bg);
 }
+.product-picker__footer a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  font-size: var(--fs-small);
+  color: var(--w-turquoise-text);
+  background: var(--w-bg-soft);
+}
+.product-picker__footer a:hover {
+  text-decoration: underline;
+}
+.product-picker {
+  position: relative;
+  flex: 1;
+  min-width: 260px;
+  max-width: 560px;
+}
+.product-picker__list {
+  min-width: min(420px, calc(100vw - 2 * var(--page-pad)));
+}

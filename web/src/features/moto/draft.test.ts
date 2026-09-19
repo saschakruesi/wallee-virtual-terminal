@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  applyConfigDefaults,
   buildLineItems,
   buildTransactionCreate,
   computeTotals,
@@ -227,5 +228,24 @@ describe('reference numbering', () => {
     consumeReference('VT', 'VT-2026-000010')
     expect(suggestReference('VT', now)).toBe('VT-2026-000011')
     expect(suggestReference('HOTEL', now)).toBe('HOTEL-2026-000001')
+  })
+})
+
+describe('applyConfigDefaults', () => {
+  it('takes currency and reference prefix from the settings unless the employee changed them', () => {
+    const d = { ...draft({ items: [item({})] }), currency: 'CHF', reference: 'VT-2026-000001' }
+    const applied = applyConfigDefaults(d, { currency: 'EUR', merchantReferencePrefix: 'HOTEL' })
+    expect(applied.currency).toBe('EUR')
+    expect(applied.reference).toMatch(/^HOTEL-\d{4}-\d{6}$/)
+    const touched = applyConfigDefaults(
+      { ...d, currencyTouched: true, referenceTouched: true },
+      { currency: 'EUR', merchantReferencePrefix: 'HOTEL' },
+    )
+    expect(touched.currency).toBe('CHF')
+    expect(touched.reference).toBe('VT-2026-000001')
+    // Same prefix: keep the already suggested number.
+    expect(
+      applyConfigDefaults(d, { currency: 'CHF', merchantReferencePrefix: 'VT' }).reference,
+    ).toBe('VT-2026-000001')
   })
 })

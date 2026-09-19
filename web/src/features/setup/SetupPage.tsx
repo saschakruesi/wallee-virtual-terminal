@@ -190,7 +190,13 @@ export function SetupPage() {
           <div
             style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s-4)', height: '100%' }}
           >
-            <img src={logoWhite} alt={t('app.wordmarkAlt')} style={{ height: 40, width: 'auto' }} />
+            <img
+              src={logoWhite}
+              alt={t('app.wordmarkAlt')}
+              className="panel-logo"
+              width="156"
+              height="40"
+            />
             <p className="statement">{t('setup.intro')}</p>
             <p>{t('setup.guide')}</p>
             <p>

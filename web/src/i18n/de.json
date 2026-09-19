@@ -465,5 +465,8 @@
   "update.done": "Update auf {target} abgeschlossen — Seite wird neu geladen.",
   "update.failed": "Update fehlgeschlagen:",
   "update.manual": "Manuell herunterladen",
-  "update.error.timeout": "Das Programm hat sich nach dem Update nicht zurückgemeldet. Bitte das Programm von Hand neu starten."
+  "update.error.timeout": "Das Programm hat sich nach dem Update nicht zurückgemeldet. Bitte das Programm von Hand neu starten.",
+  "items.productSearch.empty": "Noch keine Produkte im Katalog — unter «Produkte» anlegen oder importieren.",
+  "items.productSearch.manage": "Produkte verwalten",
+  "items.productSearch.create": "Produkte anlegen"
 }
