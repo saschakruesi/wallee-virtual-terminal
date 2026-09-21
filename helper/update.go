@@ -85,10 +85,8 @@ func isNewer(candidate, current string) bool {
 // assetName is the release asset for this platform (see helper/Makefile, release.yml).
 func assetName() string {
 	switch runtime.GOOS + "/" + runtime.GOARCH {
-	case "darwin/arm64":
-		return "wallee-virtual-terminal-macos-apple-silicon"
-	case "darwin/amd64":
-		return "wallee-virtual-terminal-macos-intel"
+	case "darwin/arm64", "darwin/amd64":
+		return "wallee-virtual-terminal-macos.zip" // universal app bundle, see scripts/make-bundle.sh
 	case "windows/amd64":
 		return "wallee-virtual-terminal-windows.exe"
 	}
@@ -152,6 +150,7 @@ type updater struct {
 	port      int
 	allowed   map[string]bool
 	restartFn func(exe string, port int) error
+	exePath   func() (string, error)
 
 	mu      sync.Mutex
 	status  updateStatus
@@ -169,6 +168,7 @@ func newUpdater(repo string, port int, allowedOrigins []string) *updater {
 		port:      port,
 		allowed:   originSet(allowedOrigins),
 		restartFn: restartProcess,
+		exePath:   os.Executable,
 		status:    updateStatus{State: stateIdle, Current: version},
 	}
 }
@@ -342,12 +342,14 @@ func (u *updater) run(tag string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
 
-	exe, err := os.Executable()
+	exe, err := u.exePath()
 	if err != nil {
 		u.fail(err)
 		return
 	}
-	exe, _ = filepath.EvalSymlinks(exe)
+	if resolved, err := filepath.EvalSymlinks(exe); err == nil {
+		exe = resolved
+	}
 	dir := filepath.Dir(exe)
 	tmp := filepath.Join(dir, "."+filepath.Base(exe)+".update")
 	defer os.Remove(tmp)
@@ -377,7 +379,15 @@ func (u *updater) run(tag string) {
 	}
 
 	u.setStatus(func(s *updateStatus) { s.State = stateInstalling })
-	if err := installBinary(tmp, exe); err != nil {
+	if strings.HasSuffix(name, ".zip") {
+		// macOS: the asset is a zip with the app bundle (see bundle.go).
+		newExe, err := installFromZip(tmp, exe)
+		if err != nil {
+			u.fail(fmt.Errorf("install: %w", err))
+			return
+		}
+		exe = newExe
+	} else if err := installBinary(tmp, exe); err != nil {
 		u.fail(fmt.Errorf("install: %w", err))
 		return
 	}
@@ -527,11 +537,16 @@ func restartProcess(exe string, port int) error {
 	return nil
 }
 
-// cleanupOldBinary removes the `.old` file left behind by a Windows update.
+// cleanupOldBinary removes what the previous update left behind: the `.old` executable
+// (Windows) or the `.app.old` bundle (macOS) and a stale staging directory.
 func cleanupOldBinary() {
 	exe, err := os.Executable()
 	if err != nil {
 		return
 	}
 	_ = os.Remove(exe + ".old")
+	if app, ok := bundleDir(exe); ok {
+		_ = os.RemoveAll(app + ".old")
+		_ = os.RemoveAll(filepath.Join(filepath.Dir(app), updateStageDir))
+	}
 }
