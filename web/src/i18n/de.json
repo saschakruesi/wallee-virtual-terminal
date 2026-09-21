@@ -484,5 +484,11 @@
   "setup.spaces.active": "aktiv",
   "setup.spaces.cancelNew": "Abbrechen",
   "setup.label": "Bezeichnung",
-  "setup.label.hint": "Anzeige oben rechts; leer = Name des Space aus wallee."
+  "setup.label.hint": "Anzeige oben rechts; leer = Name des Space aus wallee.",
+  "header.quit": "Beenden",
+  "quit.confirmTitle": "wallee Virtual Terminal beenden?",
+  "quit.confirmMessage": "Das Programm wird beendet. Zum erneuten Starten Doppelklick auf das Programm. Laufende Zahlungen bleiben in wallee erhalten.",
+  "quit.failed": "Beenden fehlgeschlagen. Das Programm läuft weiter.",
+  "quit.doneTitle": "Der wallee Virtual Terminal ist beendet.",
+  "quit.doneText": "Dieses Fenster kann geschlossen werden. Zum Starten Doppelklick auf das Programm."
 }

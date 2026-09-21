@@ -1,4 +1,4 @@
-import { useEffect, useSyncExternalStore } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { getUiSnapshot, subscribeUi } from '@/lib/uiStore'
 import { useT } from '@/i18n'
@@ -8,6 +8,7 @@ import { APP_VERSION, RELEASES_URL } from '@/lib/version'
 import { isOffline, subscribeConnection } from '@/lib/connection'
 import { useConfig } from './ConfigProvider'
 import { SpaceMenu } from './SpaceMenu'
+import { QuitControl } from './QuitControl'
 
 const NAV = [
   { to: '/', key: 'nav.new', end: true },
@@ -23,6 +24,7 @@ export function Layout() {
   const ui = useSyncExternalStore(subscribeUi, getUiSnapshot, getUiSnapshot)
   const offline = useSyncExternalStore(subscribeConnection, isOffline, isOffline)
   const openLinks = ui.openLinkCount ?? 0
+  const [quit, setQuit] = useState(false)
 
   // ⌘/Ctrl+N = new transaction, ⌘/Ctrl+K = customer search (docs/03-ui-flows.md «Tastatur»).
   useEffect(() => {
@@ -44,6 +46,15 @@ export function Layout() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [config, navigate])
+  if (quit) {
+    return (
+      <div className="quit-screen" role="status">
+        <img src={logo} alt={t('app.wordmarkAlt')} width="86" height="22" />
+        <h1>{t('quit.doneTitle')}</h1>
+        <p>{t('quit.doneText')}</p>
+      </div>
+    )
+  }
   return (
     <div className="app">
       <a href="#main" className="visually-hidden">
@@ -81,6 +92,7 @@ export function Layout() {
             >
               <Icon name="settings" />
             </Link>
+            <QuitControl onQuit={() => setQuit(true)} />
             <span className="wordmark">
               <img src={logo} alt={t('app.wordmarkAlt')} width="86" height="22" />
             </span>

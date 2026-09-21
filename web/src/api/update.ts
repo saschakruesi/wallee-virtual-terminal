@@ -66,3 +66,9 @@ export function getHelperVersion(): Promise<string> {
     r && typeof r.version === 'string' ? r.version : '',
   )
 }
+
+/** POST /quit: stops the helper (the app bundle / GUI build has no window to close). */
+export async function quitHelper(): Promise<void> {
+  const res = await fetch('/quit', { method: 'POST', credentials: 'omit', cache: 'no-store' })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+}
