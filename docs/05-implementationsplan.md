@@ -112,6 +112,23 @@ Verlauf zeigt Vorgänge aus beiden Modi mit korrektem Status und funktionierende
 **DoD:** Tag `v1.0.0` erzeugt ein Release mit drei Binaries; frische Maschine (Mac und Windows) → Download →
 Start → Setup → Testzahlung ohne Konsultation der Doku durch eine nicht-technische Testperson.
 
+## Phase 8 — Desktop-Paketierung (Release 1.3.0)
+
+Spec: `docs/superpowers/specs/2026-09-21-desktop-packaging-design.md`.
+
+1. macOS als App-Bundle im Zip: Universal-Binary (`makefat`), `Info.plist` mit `LSUIElement`, Icon; ein Download
+   für alle Macs, Ausführ-Rechte bleiben im Zip erhalten. Windows-Exe mit Icon, Versionsinfo, Manifest
+   (`go-winres`) und ohne Konsolenfenster (`-H windowsgui`).
+2. Helper ohne Fenster: `POST /quit` hinter «Beenden» im Header (Bestätigungsdialog, End-Zustand), zweiter
+   Doppelklick öffnet nur den Browser der laufenden Instanz, Startfehler als Dialog.
+3. Self-Update auf dem Mac tauscht das ganze Bundle (Zip entpacken, `.app` → `.app.old`).
+4. Release-Workflow: Bundle und Ressourcen auf dem Linux-Runner, macOS-Signatur mit Notarisierung und Stapling.
+5. Doku: README (erster Start auf macOS 15+, SmartScreen, Beenden), Architektur («Signaturen»), Changelog.
+
+**DoD:** Tag `v1.3.0` erzeugt `…-macos.zip`, `…-windows.exe`, `SHA256SUMS.txt`. Mac: Zip laden, App mit Icon,
+Start ohne Terminal, «Beenden» funktioniert, Update-Pfad getestet. Windows: Icon und Versionsinfo im Explorer,
+Start ohne Konsole. Mac-Nutzer von 1.2.0 laden einmalig manuell (Release-Notes).
+
 ---
 
 ## Testplan (manuell, mit Test-Space)
@@ -134,7 +151,8 @@ Start → Setup → Testzahlung ohne Konsultation der Doku durch eine nicht-tech
 
 ## Offene Punkte (Entscheid durch wallee, nicht durch Claude Code)
 
-1. **Code-Signing** (Apple Developer ID + Notarisierung, Windows-Zertifikat) für die Kundenauslieferung.
+1. **Code-Signing** (Apple Developer ID + Notarisierung, Windows-Zertifikat) für die Kundenauslieferung —
+   Voraussetzungen und Secrets in `docs/01-architektur.md` «Signaturen».
 2. **Produktname** — Arbeitstitel «wallee Virtual Terminal»; Alternativen «wallee MOTO Desk», «wallee Payment Desk».
 3. **CORS-Freigabe** für `/api/v2.0` (JWT-authentifizierte Requests) im wallee-Backend — würde den Helper
    überflüssig machen; das Frontend ist darauf vorbereitet (`VITE_API_BASE`).
