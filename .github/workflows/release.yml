@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   build:
-    name: Build binaries
+    name: Build assets
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,20 +35,31 @@ jobs:
       - name: Embed frontend
         run: rm -rf helper/dist && cp -r web/dist helper/dist
 
-      - name: Cross-compile
+      # Icon, version info and manifest for the Windows exe (rsrc_windows_amd64.syso, picked up by the linker).
+      - name: Windows resources
+        working-directory: helper
+        run: |
+          V="${GITHUB_REF_NAME#v}"
+          go run github.com/tc-hib/go-winres@v0.3.3 make --in winres/winres.json --arch amd64 --product-version "$V" --file-version "$V"
+
+      - name: Cross-compile and package
         working-directory: helper
         env:
           CGO_ENABLED: '0'
         run: |
           go vet ./... && go test ./...
-          mkdir -p ../out
+          mkdir -p ../out/tmp
           LD="-s -w -X main.version=${GITHUB_REF_NAME}"
-          GOOS=darwin  GOARCH=arm64 go build -trimpath -buildvcs=false -ldflags "$LD" -o ../out/wallee-virtual-terminal-macos-apple-silicon .
-          GOOS=darwin  GOARCH=amd64 go build -trimpath -buildvcs=false -ldflags "$LD" -o ../out/wallee-virtual-terminal-macos-intel .
-          GOOS=windows GOARCH=amd64 go build -trimpath -buildvcs=false -ldflags "$LD" -o ../out/wallee-virtual-terminal-windows.exe .
-          cd ../out && sha256sum * > SHA256SUMS.txt
+          GOOS=darwin  GOARCH=arm64 go build -trimpath -buildvcs=false -ldflags "$LD" -o ../out/tmp/darwin-arm64 .
+          GOOS=darwin  GOARCH=amd64 go build -trimpath -buildvcs=false -ldflags "$LD" -o ../out/tmp/darwin-amd64 .
+          GOOS=windows GOARCH=amd64 go build -trimpath -buildvcs=false -ldflags "$LD -H windowsgui" -o ../out/wallee-virtual-terminal-windows.exe .
+          ../scripts/make-bundle.sh ../out/tmp/darwin-arm64 ../out/tmp/darwin-amd64 "${GITHUB_REF_NAME}" ../out
+          rm -rf ../out/tmp
+          cd ../out && sha256sum wallee-virtual-terminal-* > SHA256SUMS.txt
 
-      # --- Optional signing: steps run only when the secrets are configured in the repo ---
+      # --- Optional Windows code signing: runs only when the PFX secrets are configured. ---
+      # Alternative without a PFX: Azure Artifact Signing (formerly Trusted Signing) on a Windows
+      # runner with azure/trusted-signing-action; see docs/01-architektur.md «Signaturen».
       - name: Windows code signing (optional)
         if: ${{ env.WINDOWS_CERT_BASE64 != '' }}
         env:
@@ -69,7 +80,8 @@ jobs:
           name: binaries
           path: out/
 
-  # macOS signing + notarization must run on a macOS runner. Runs only when APPLE_* secrets exist.
+  # macOS signing, notarization and stapling need a macOS runner. Runs only when
+  # the repository variable MACOS_SIGNING_ENABLED is 'true' and the APPLE_* secrets exist.
   sign-macos:
     name: macOS signing & notarization (optional)
     needs: build
@@ -91,20 +103,28 @@ jobs:
           security unlock-keychain -p ci build.keychain
           security import cert.p12 -k build.keychain -P "$APPLE_CERT_PASSWORD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple: -s -k ci build.keychain
-      - name: Sign & notarize
+      - name: Sign, notarize, staple
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
         run: |
-          for f in out/wallee-virtual-terminal-macos-*; do
-            codesign --force --options runtime --timestamp --sign "$APPLE_SIGNING_IDENTITY" "$f"
-            zip -j "$f.zip" "$f"
-            xcrun notarytool submit "$f.zip" --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_PASSWORD" --wait
-            rm "$f.zip"
-          done
-          (cd out && shasum -a 256 wallee-virtual-terminal-* > SHA256SUMS.txt)
+          set -euo pipefail
+          cd out
+          APP="wallee Virtual Terminal.app"
+          ditto -x -k wallee-virtual-terminal-macos.zip .
+          codesign --force --deep --options runtime --timestamp --sign "$APPLE_SIGNING_IDENTITY" "$APP"
+          codesign --verify --deep --strict --verbose=2 "$APP"
+          ditto -c -k --keepParent "$APP" notarize.zip
+          xcrun notarytool submit notarize.zip --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_PASSWORD" --wait
+          rm notarize.zip
+          xcrun stapler staple "$APP"
+          spctl --assess --type execute --verbose=2 "$APP"
+          rm wallee-virtual-terminal-macos.zip
+          ditto -c -k --keepParent "$APP" wallee-virtual-terminal-macos.zip
+          rm -rf "$APP"
+          shasum -a 256 wallee-virtual-terminal-* > SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
           name: binaries
