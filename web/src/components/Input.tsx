@@ -9,6 +9,11 @@ type Props = Omit<InputHTMLAttributes<HTMLInputElement>, 'prefix'> & {
   prefix?: ReactNode
   /** Trailing element inside the control (button, icon). */
   trailing?: ReactNode
+  /**
+   * Popover anchored to the control's bottom edge (autocomplete lists). Rendered inside the
+   * control wrapper so it lines up with the input regardless of label and hint.
+   */
+  dropdown?: ReactNode
   align?: 'left' | 'right'
   wrapperClassName?: string
 }
@@ -20,6 +25,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(function Input(
     error,
     prefix,
     trailing,
+    dropdown,
     align = 'left',
     id,
     className,
@@ -65,6 +71,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(function Input(
           {...rest}
         />
         {trailing}
+        {dropdown && <div className="field__dropdown">{dropdown}</div>}
       </div>
       {error ? (
         <div id={errorId} className="field__error" role="alert">

@@ -14,6 +14,7 @@ import { CustomerSearch } from '@/features/customers/CustomerSearch'
 import { AddressFields } from '@/features/customers/AddressFields'
 import { addressHasContent, emptyAddressForm } from '@/features/customers/addressForm'
 import type { AddressFormValue } from '@/features/customers/addressForm'
+import { rememberCustomer } from '@/lib/storage'
 import { customerFromWallee, emptyCustomer } from './draft'
 import type { CustomerDraft, Mode } from './draft'
 
@@ -48,7 +49,17 @@ export function CustomerStep({ customer, mode, error, onChange }: Props) {
     if (view === 'adhoc') firstAdhocRef.current?.focus()
   }, [view])
 
+  const remember = (c: Customer) =>
+    rememberCustomer({
+      id: c.id,
+      givenName: c.givenName,
+      familyName: c.familyName,
+      emailAddress: c.emailAddress,
+      customerId: c.customerId,
+    })
+
   const select = async (c: Customer) => {
+    remember(c)
     onChange(customerFromWallee(c))
     setView('selected')
     setLoadingAddress(true)
@@ -110,6 +121,7 @@ export function CustomerStep({ customer, mode, error, onChange }: Props) {
         name: [v.givenName, v.familyName].filter(Boolean).join(' ') || v.organizationName,
       }),
     )
+    remember({ ...created, emailAddress: created.emailAddress ?? v.emailAddress })
     onChange(customerFromWallee(created, address))
     setView('selected')
   }
@@ -250,6 +262,7 @@ export function CustomerStep({ customer, mode, error, onChange }: Props) {
         creds={cfg}
         autoFocus
         inputId="wizard-customer-search"
+        variant="dropdown"
         onSelect={(c) => void select(c)}
         footer={
           <div className="row" style={{ gap: 'var(--s-3)' }}>

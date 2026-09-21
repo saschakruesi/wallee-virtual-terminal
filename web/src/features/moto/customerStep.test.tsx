@@ -123,6 +123,32 @@ describe('wizard customer step with wallee customers', () => {
     })
   })
 
+  it('suggests recently picked customers in the dropdown when the box is empty', async () => {
+    saveConfig({ ...DEFAULT_CONFIG, userId: '1', authKey: 'a2V5', spaceId: '4711' })
+    updateUiPrefs({
+      lang: 'de',
+      recentCustomers: [{ id: 501, givenName: 'Anna', familyName: 'Muster', customerId: 'K-100' }],
+    })
+    window.location.hash = '#/'
+    const user = userEvent.setup()
+    render(<App />)
+    await user.click(screen.getByRole('button', { name: /Telefon \/ MOTO/ }))
+
+    const box = screen.getByRole('combobox', { name: 'Kunde suchen' })
+    await user.click(box)
+    expect(screen.getByText('Zuletzt verwendet')).toBeInTheDocument()
+    await user.click(screen.getByRole('option', { name: /Anna Muster/ }))
+    await waitFor(() => expect(addresses).toHaveBeenCalledWith(expect.anything(), 501))
+    expect(search).not.toHaveBeenCalled()
+
+    // «Kunde ändern» returns to the box; the pick stays on top of the suggestions.
+    await user.click(screen.getByRole('button', { name: 'Ändern' }))
+    await user.click(screen.getByRole('combobox', { name: 'Kunde suchen' }))
+    expect(screen.getByRole('option', { name: /Anna Muster/ })).toBeInTheDocument()
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('option')).not.toBeInTheDocument()
+  })
+
   it('still allows continuing without a profile', async () => {
     saveConfig({ ...DEFAULT_CONFIG, userId: '1', authKey: 'a2V5', spaceId: '4711' })
     updateUiPrefs({ lang: 'de' })

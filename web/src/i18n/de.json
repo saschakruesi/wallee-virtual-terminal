@@ -321,6 +321,7 @@
   "customer.noResults": "Keine Kunden gefunden.",
   "customer.searchError": "Suche fehlgeschlagen: {message}",
   "customer.results": "Suchergebnisse",
+  "customer.recent": "Zuletzt verwendet",
   "customer.select": "Auswählen",
   "customer.number": "Kundennummer",
   "customer.createNew": "Neuen Kunden anlegen",
