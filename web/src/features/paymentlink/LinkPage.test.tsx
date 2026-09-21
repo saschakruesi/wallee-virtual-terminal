@@ -26,7 +26,8 @@ const searchLevels = vi.fn(async () => [
     id: 900,
     state: 'PENDING' as const,
     createdOn: '2026-09-18T10:00:05Z',
-    timeoutOn: '2026-09-21T10:00:00Z',
+    // Relative to now: a fixed date made the test flip to «Abgelaufen» once it lay in the past.
+    timeoutOn: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
     configuration: { id: 1, name: 'E-Mail', type: 1451 },
   },
 ])
