@@ -1045,13 +1045,31 @@ button.stepper__step:hover .stepper__circle {
   padding: var(--s-2) var(--s-3);
 }
 
-.product-picker__list {
+/* Autocomplete popover: anchored to the control (see Input `dropdown`), same width as the input. */
+.field__dropdown {
   position: absolute;
   z-index: 20;
   left: 0;
   right: 0;
-  top: calc(100% - 22px);
+  top: calc(100% + 4px);
+}
+.field__dropdown .result-list-ul {
   background: var(--w-bg);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.1);
+}
+.result-list-ul .result-list__note {
+  display: block;
+  padding: 10px 12px;
+}
+.result-list-ul .result-list__heading {
+  display: block;
+  padding: 8px 12px 4px;
+  font-size: var(--fs-small);
+  color: var(--w-text-muted);
+  background: var(--w-bg-soft);
+}
+.result-list-ul li.result-list__heading + li {
+  border-top: 0;
 }
 .product-picker__footer a {
   display: flex;
@@ -1066,13 +1084,9 @@ button.stepper__step:hover .stepper__circle {
   text-decoration: underline;
 }
 .product-picker {
-  position: relative;
   flex: 1;
   min-width: 260px;
   max-width: 560px;
-}
-.product-picker__list {
-  min-width: min(420px, calc(100vw - 2 * var(--page-pad)));
 }
 
 /* ---------- Space chips on the setup screen ---------- */

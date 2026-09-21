@@ -84,6 +84,7 @@ export function SetupPage() {
   )
 
   const [form, setForm] = useState<Form>(() => formFromConfig(editing, remember))
+  const [currencyTouched, setCurrencyTouched] = useState(false)
   const [errors, setErrors] = useState<Errors>({})
   const [keyMasked, setKeyMasked] = useState(Boolean(editing?.authKey))
   const [showKey, setShowKey] = useState(false)
@@ -107,6 +108,7 @@ export function SetupPage() {
       ),
     )
     setKeyMasked(Boolean(editingId && profiles.some((p) => p.id === editingId && p.authKey)))
+    setCurrencyTouched(false)
     setErrors({})
     setResult(null)
     setError(null)
@@ -164,8 +166,11 @@ export function SetupPage() {
     setResult(null)
     try {
       const res = await testConnection(creds)
+      // A new space takes over the space's primary currency unless the employee chose one;
+      // a saved space keeps its configured currency.
       const currency =
-        form.currency === DEFAULT_CONFIG.currency &&
+        !editing &&
+        !currencyTouched &&
         res.space.primaryCurrency &&
         (CURRENCIES as readonly string[]).includes(res.space.primaryCurrency)
           ? res.space.primaryCurrency
@@ -418,7 +423,10 @@ export function SetupPage() {
               <Select
                 label={t('setup.currency')}
                 value={form.currency}
-                onChange={(e) => set('currency', e.target.value)}
+                onChange={(e) => {
+                  set('currency', e.target.value)
+                  setCurrencyTouched(true)
+                }}
                 options={CURRENCIES.map((c) => ({ value: c, label: c }))}
               />
               <Select

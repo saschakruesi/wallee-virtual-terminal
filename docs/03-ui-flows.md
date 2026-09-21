@@ -61,7 +61,9 @@ User mit Berechtigung auf Ihren Space. Anleitung →»), rechts das Formular auf
 2. **Authentication Key** (Passwortfeld mit Auge-Toggle; nach dem Speichern als `••••••••` + «ändern»)
 3. **Space ID** (Zahl)
 4. **Umgebung**: Segment «Test (PREVIEW)» / «Live» — Standard Test, Live mit Bestätigungsdialog
-5. **Standardwährung** (Select aus `CHF, EUR, USD, GBP`, vorbelegt aus Space nach Verbindungstest)
+5. **Standardwährung** (Select aus `CHF, EUR, USD, GBP`; beim Anlegen eines Space übernimmt der
+   Verbindungstest die Primärwährung des Space, sofern nichts gewählt wurde — ein gespeicherter Space
+   behält seine Einstellung)
 6. **Sprache der Zahlungsseite/E-Mails** (`de-CH`, `en-US`, `fr-CH`, `it-CH`)
 7. **Referenz-Präfix** (Text, Standard `VT`), Vorschau «VT-2026-000001»
 8. **Abschlussverhalten**: «Sofort abbuchen (empfohlen)» / «Nur autorisieren, später abschliessen» / «Space-Einstellung»
@@ -93,7 +95,11 @@ aktiver Schritt türkiser Kreis mit schwarzer Zahl, Haarlinie dazwischen).
 ### Schritt 1 — Kunde
 
 Ein Suchfeld mit Autofokus: «Name, E-Mail oder Kundennummer». Ab 2 Zeichen Debounce 300 ms → wallee-Suche,
-Resultate als Liste (Name, E-Mail, Kundennummer). Auswahl übernimmt Kunde + Standardadresse.
+Resultate als Dropdown direkt unter dem Feld (Name, E-Mail, Kundennummer), bündig mit der Eingabebox wie
+bei der Produktsuche. Bei leerem Feld schlägt das Dropdown die zuletzt gewählten Kunden vor («Zuletzt
+verwendet», lokal in `wvt.ui` gemerkt, max. 8). Pfeiltasten/Enter wählen, Escape leert bzw. schliesst.
+Auswahl übernimmt Kunde + Standardadresse. Auf dem Kunden-Screen (`#/customers`) bleibt die Trefferliste
+inline unter dem Feld.
 
 Darunter zwei Links: **«Neuen Kunden anlegen»** (öffnet Inline-Formular, speichert in wallee, wählt aus) und
 **«Ohne Kundenprofil weiter»** (nur die Pflichtfelder für den Vorgang: E-Mail (im Link-Modus Pflicht), Vorname,

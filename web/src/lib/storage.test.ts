@@ -81,6 +81,21 @@ describe('multi-space store', () => {
     expect(cfg.spaceName).toBe('Alt')
     expect(cfg.id).toBeTruthy()
     expect(loadProfiles()).toHaveLength(1)
+    // The generated id is persisted at once, so every read agrees on it.
+    expect(loadProfiles()[0]?.id).toBe(cfg.id)
+    expect(loadConfig()?.id).toBe(cfg.id)
+    expect(readJson<{ version?: number }>(STORAGE_KEYS.config, {}).version).toBe(2)
+  })
+
+  it('assigns stable ids to stored profiles that lack one', () => {
+    window.localStorage.setItem(
+      STORAGE_KEYS.config,
+      JSON.stringify({ version: 2, activeId: null, rememberCredentials: true, profiles: [base] }),
+    )
+    const first = loadConfig()!
+    expect(first.id).toBeTruthy()
+    expect(loadConfig()?.id).toBe(first.id)
+    expect(loadProfiles().map((p) => p.id)).toEqual([first.id])
   })
 
   it('keeps several profiles, switches and removes them', () => {

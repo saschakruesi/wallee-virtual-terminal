@@ -66,6 +66,29 @@ export type UiPrefs = {
   historyQueryMode?: 'metaData' | 'reference'
   /** Open payment links counted at the last history load, for the navigation badge. */
   openLinkCount?: number
+  /** Customers picked in the wizard most recently (newest first), offered as suggestions. */
+  recentCustomers?: RecentCustomer[]
+}
+
+export type RecentCustomer = {
+  id: number
+  givenName?: string
+  familyName?: string
+  emailAddress?: string
+  customerId?: string
+}
+
+export const RECENT_CUSTOMERS_MAX = 8
+
+export function readRecentCustomers(): RecentCustomer[] {
+  const list = readUiPrefs().recentCustomers
+  return Array.isArray(list) ? list.filter((c) => c && typeof c.id === 'number') : []
+}
+
+/** Moves the customer to the front of the suggestion list (deduplicated by id). */
+export function rememberCustomer(customer: RecentCustomer): void {
+  const rest = readRecentCustomers().filter((c) => c.id !== customer.id)
+  updateUiPrefs({ recentCustomers: [customer, ...rest].slice(0, RECENT_CUSTOMERS_MAX) })
 }
 
 export function readUiPrefs(): UiPrefs {
@@ -175,7 +198,11 @@ function emptyStore(): ConfigStore {
   return { version: 2, activeId: null, rememberCredentials: true, profiles: [] }
 }
 
-/** Reads the store from localStorage, then sessionStorage; migrates a legacy single config. */
+/**
+ * Reads the store from localStorage, then sessionStorage; migrates a legacy single config.
+ * A migration (legacy shape, or a profile without id) is written back at once so the generated
+ * profile ids stay stable across reads — otherwise the active id would never match the list.
+ */
 export function loadStore(): ConfigStore {
   for (const kind of ['local', 'session'] as const) {
     const raw = readJson<unknown>(STORAGE_KEYS.config, null, kind)
@@ -186,21 +213,28 @@ export function loadStore(): ConfigStore {
       const activeId = profiles.some((p) => p.id === raw.activeId)
         ? raw.activeId
         : (profiles[0]?.id ?? null)
-      return {
+      const store: ConfigStore = {
         version: 2,
         activeId,
         rememberCredentials: raw.rememberCredentials !== false,
         profiles,
       }
+      const idsChanged = raw.profiles.some(
+        (p, i) => !p || typeof p !== 'object' || (p as { id?: unknown }).id !== profiles[i]?.id,
+      )
+      if (idsChanged || activeId !== raw.activeId) saveStore(store)
+      return store
     }
     if (isLegacyConfig(raw)) {
       const profile = normaliseProfile(raw)!
-      return {
+      const store: ConfigStore = {
         version: 2,
         activeId: profile.id,
         rememberCredentials: raw.rememberCredentials !== false,
         profiles: [profile],
       }
+      saveStore(store)
+      return store
     }
   }
   return emptyStore()

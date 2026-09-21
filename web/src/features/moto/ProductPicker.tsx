@@ -73,50 +73,48 @@ export function ProductPicker({ onPick }: Props) {
             <Icon name="search" />
           </span>
         }
+        dropdown={
+          show && (
+            <ul
+              id={listId}
+              role="listbox"
+              aria-label={t('items.productSearch.results')}
+              className="result-list-ul"
+            >
+              {empty && (
+                <li className="result-list__note small muted">{t('items.productSearch.empty')}</li>
+              )}
+              {!empty && results.length === 0 && (
+                <li className="result-list__note small muted">{t('items.productSearch.none')}</li>
+              )}
+              {results.map((p, i) => (
+                <li key={p.id}>
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={i === active}
+                    className={['result-row', i === active ? 'is-active' : ''].join(' ').trim()}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => pick(p)}
+                  >
+                    <span className="result-row__name">
+                      {p.name}
+                      {p.sku && <span className="small muted"> · {p.sku}</span>}
+                    </span>
+                    <span className="result-row__meta small tnum">{formatAmount(p.price)}</span>
+                  </button>
+                </li>
+              ))}
+              <li className="product-picker__footer">
+                <Link to="/products" onMouseDown={(e) => e.preventDefault()}>
+                  <Icon name="plus" size="sm" />
+                  {empty ? t('items.productSearch.create') : t('items.productSearch.manage')}
+                </Link>
+              </li>
+            </ul>
+          )
+        }
       />
-      {show && (
-        <ul
-          id={listId}
-          role="listbox"
-          aria-label={t('items.productSearch.results')}
-          className="result-list-ul product-picker__list"
-        >
-          {empty && (
-            <li className="small muted" style={{ padding: '10px 12px' }}>
-              {t('items.productSearch.empty')}
-            </li>
-          )}
-          {!empty && results.length === 0 && (
-            <li className="small muted" style={{ padding: '10px 12px' }}>
-              {t('items.productSearch.none')}
-            </li>
-          )}
-          {results.map((p, i) => (
-            <li key={p.id}>
-              <button
-                type="button"
-                role="option"
-                aria-selected={i === active}
-                className={['result-row', i === active ? 'is-active' : ''].join(' ').trim()}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => pick(p)}
-              >
-                <span className="result-row__name">
-                  {p.name}
-                  {p.sku && <span className="small muted"> · {p.sku}</span>}
-                </span>
-                <span className="result-row__meta small tnum">{formatAmount(p.price)}</span>
-              </button>
-            </li>
-          ))}
-          <li className="product-picker__footer">
-            <Link to="/products" onMouseDown={(e) => e.preventDefault()}>
-              <Icon name="plus" size="sm" />
-              {empty ? t('items.productSearch.create') : t('items.productSearch.manage')}
-            </Link>
-          </li>
-        </ul>
-      )}
     </div>
   )
 }
