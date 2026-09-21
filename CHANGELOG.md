@@ -5,6 +5,8 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+## [1.3.0] — 2026-09-21
+
 ### Added
 - macOS: Auslieferung als «wallee Virtual Terminal.app» (Zip) mit Icon und Universal-Binary — ein Download für
   Apple Silicon und Intel, kein `chmod` mehr nötig.
