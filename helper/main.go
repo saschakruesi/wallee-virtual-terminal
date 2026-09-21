@@ -54,15 +54,28 @@ func main() {
 	if restartPort, err := strconv.Atoi(os.Getenv(restartEnvPort)); err == nil && restartPort > 0 {
 		*port = restartPort
 	}
+	// Second double-click on the app: if the preferred port is taken by another instance of
+	// this program, just bring the browser to it. (Not after a self-update restart, where the
+	// old process is the one still holding the port.)
+	if os.Getenv(restartEnvPort) == "" && portInUse(*port) && runningInstance(*port, time.Second) {
+		target := fmt.Sprintf("http://127.0.0.1:%d", *port)
+		log.Printf("already running at %s", target)
+		if !*noBrowser {
+			if err := openBrowser(target); err != nil {
+				fatal(fmt.Sprintf("wallee Virtual Terminal läuft bereits unter %s, der Browser konnte aber nicht geöffnet werden.\nAlready running at %s, but the browser could not be opened.\n\n%v", target, target, err))
+			}
+		}
+		return
+	}
 	listener, actualPort, err := listenOnFreePort(*port, portAttempts)
 	if err != nil {
-		log.Fatalf("no free port between %d and %d: %v", *port, *port+portAttempts-1, err)
+		fatal(fmt.Sprintf("Kein freier Port zwischen %d und %d.\nNo free port between %d and %d.\n\n%v", *port, *port+portAttempts-1, *port, *port+portAttempts-1, err))
 	}
 	origin := fmt.Sprintf("http://127.0.0.1:%d", actualPort)
 
 	upstream, err := url.Parse(upstreamBase)
 	if err != nil {
-		log.Fatal(err)
+		fatal(err.Error())
 	}
 
 	allowedOrigins := []string{origin, fmt.Sprintf("http://localhost:%d", actualPort)}
@@ -79,13 +92,14 @@ func main() {
 		IdleTimeout:       120 * time.Second,
 	}
 
-	fmt.Printf("wallee Virtual Terminal läuft auf %s — dieses Fenster geöffnet lassen\n", origin)
-	fmt.Printf("wallee Virtual Terminal is running at %s — keep this window open (Ctrl+C to quit)\n", origin)
+	// Only visible when started from a terminal: the app bundle and the Windows GUI build have no console.
+	fmt.Printf("wallee Virtual Terminal läuft auf %s — beenden über «Beenden» in der Oberfläche (oder Ctrl+C)\n", origin)
+	fmt.Printf("wallee Virtual Terminal is running at %s — quit via «Beenden» in the UI (or Ctrl+C)\n", origin)
 	fmt.Printf("Version %s\n\n", version)
 
 	go func() {
 		if err := server.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatalf("server error: %v", err)
+			fatal(fmt.Sprintf("Serverfehler / server error:\n%v", err))
 		}
 	}()
 
@@ -108,6 +122,16 @@ func main() {
 	if err := server.Shutdown(ctx); err != nil {
 		log.Printf("shutdown: %v", err)
 	}
+}
+
+// portInUse reports whether 127.0.0.1:port cannot be bound right now.
+func portInUse(port int) bool {
+	ln, err := net.Listen("tcp", net.JoinHostPort("127.0.0.1", strconv.Itoa(port)))
+	if err != nil {
+		return true
+	}
+	_ = ln.Close()
+	return false
 }
 
 // listenOnFreePort tries preferred, preferred+1, … on 127.0.0.1 only.
