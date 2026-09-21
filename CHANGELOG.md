@@ -5,6 +5,19 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+## [1.2.1] — 2026-09-21
+
+### Added
+- Kundensuche im Vorgang als Dropdown direkt unter dem Eingabefeld; bei leerem Feld werden die zuletzt
+  gewählten Kunden vorgeschlagen («Zuletzt verwendet»).
+
+### Fixed
+- Einrichtung zeigte ein leeres Formular «Neuer Space», obwohl ein Space gespeichert war (Konfiguration
+  aus Versionen vor 1.2.0 erhielt bei jedem Laden eine neue Profil-ID).
+- Standardwährung: Der Verbindungstest ersetzte die gespeicherte Währung durch die Primärwährung des Space.
+  Das geschieht nur noch beim Anlegen eines neuen Space, solange keine Währung gewählt wurde.
+- Produktauswahl: Die Liste überlappte das Eingabefeld; sie öffnet jetzt bündig darunter.
+
 ## [1.2.0] — 2026-09-19
 
 ### Added
@@ -45,7 +58,8 @@ Erste Version. Abnahme mit einem wallee Test-Space (Testplan T1–T13 in `docs/0
 - Go-Helper als Einzeldatei (macOS Apple Silicon/Intel, Windows) mit eingebettetem Frontend und
   Reverse-Proxy auf app-wallee.com; Release-Workflow mit Prüfsummen und optionalem Code-Signing.
 
-[Unreleased]: https://github.com/saschakruesi/wallee-virtual-terminal/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/saschakruesi/wallee-virtual-terminal/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/saschakruesi/wallee-virtual-terminal/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/saschakruesi/wallee-virtual-terminal/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/saschakruesi/wallee-virtual-terminal/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/saschakruesi/wallee-virtual-terminal/releases/tag/v1.0.0
