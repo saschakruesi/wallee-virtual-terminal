@@ -8,3 +8,4 @@ dist/
 coverage/
 web/node_modules/.tmp/
 *.log
+helper/*.syso

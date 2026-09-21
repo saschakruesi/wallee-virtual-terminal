@@ -120,19 +120,56 @@ Bei `rememberCredentials = false` liegt `wvt.config` in `sessionStorage` (weg be
 2. `cd helper && go build` — `static.go` bettet `../web/dist` ein (`//go:embed` über einen Symlink oder
    Kopierschritt im Makefile, da `embed` keine Pfade ausserhalb des Moduls kann → Makefile kopiert
    `web/dist` nach `helper/dist` vor dem Build).
-3. `make release` erzeugt:
-   - `wallee-virtual-terminal-macos-apple-silicon`
-   - `wallee-virtual-terminal-macos-intel`
-   - `wallee-virtual-terminal-windows.exe`
-4. GitHub Actions (`release.yml`) läuft bei Tag `v*` und veröffentlicht die drei Dateien als Release-Assets,
-   plus `SHA256SUMS.txt`.
+3. `make release` (seit 1.3.0) erzeugt in `dist/`:
+   - `wallee-virtual-terminal-macos.zip` — «wallee Virtual Terminal.app» mit Universal-Binary (arm64 + amd64,
+     zusammengesetzt mit `github.com/randall77/makefat`, reines Go, kein `lipo`), `Info.plist` aus
+     `helper/bundle/Info.plist` (`LSUIElement`: kein Dock-Symbol, kein Terminal), Icon `assets/icon/wallee.icns`.
+     Zusammengebaut von `scripts/make-bundle.sh`; das Zip erhält die Unix-Rechte, darum kein `chmod` beim Kunden.
+   - `wallee-virtual-terminal-windows.exe` — mit `-H windowsgui` (kein Konsolenfenster) und Ressourcen aus
+     `helper/winres/winres.json` (Icon, Versionsinfo, Manifest), die `go-winres` vor dem Build als
+     `rsrc_windows_amd64.syso` erzeugt (gitignored, der Linker nimmt sie automatisch).
+   - `SHA256SUMS.txt`
+4. GitHub Actions (`release.yml`) läuft bei Tag `v*`, baut dieselben drei Dateien auf einem Linux-Runner und
+   veröffentlicht sie als Release-Assets.
 
-**Signing / Gatekeeper (offener Punkt für wallee, nicht für Claude Code):** Unsignierte Binaries lösen
-auf macOS «kann nicht geöffnet werden» aus (Umgehung: Rechtsklick → Öffnen bzw. Systemeinstellungen →
-Datenschutz → «Trotzdem öffnen») und auf Windows SmartScreen. Für die Kundenauslieferung sollte wallee
-mit dem Apple Developer ID (Notarisierung) und einem Windows-Code-Signing-Zertifikat signieren. Der
-Release-Workflow bekommt dafür vorbereitete, per Secret aktivierbare Schritte (`codesign`/`notarytool`,
-`signtool`), die ohne Secrets übersprungen werden. Das README beschreibt den Workaround für unsignierte Builds.
+**Icons:** Quelle `assets/icon/icon.svg` (weisse Kachel mit Haarlinie, «w»-Monogramm türkis, gemäss
+`docs/04-design-system.md`), daraus `scripts/make-icons.sh` (macOS: `qlmanage`, `sips`, `iconutil`) → PNGs in
+allen Grössen und `wallee.icns`; beides ist committet. Die `.ico` für Windows baut `go-winres` aus den PNGs.
+
+**Ohne Fenster:** Weil weder Bundle noch GUI-Exe eine Konsole haben, gibt es `POST /quit` (gleicher
+Origin-Check wie Proxy und Updater) hinter «Beenden» im Header. Ein zweiter Doppelklick prüft, ob auf dem
+Wunschport bereits dieses Programm antwortet (`GET /update/version`), öffnet dann nur den Browser und beendet
+sich. Startfehler (kein freier Port) erscheinen als Dialog (`MessageBoxW` via `syscall` bzw. `osascript`).
+
+## Signaturen (offener Punkt für wallee)
+
+Ohne Signatur meldet macOS beim ersten Start «Apple konnte nicht überprüfen …» (Umgehung seit macOS 15 nur
+über Systemeinstellungen → Datenschutz & Sicherheit → «Trotzdem öffnen») und Windows zeigt SmartScreen.
+Das README beschreibt beides. Die Signier-Schritte im Release-Workflow sind vorbereitet und laufen, sobald die
+Secrets gesetzt sind. Was wallee dafür beschaffen muss:
+
+**macOS — Apple Developer Program** (99 USD/Jahr, als Organisation; braucht D-U-N-S-Nummer, E-Mail auf der
+Firmendomain, öffentliche Website, zeichnungsberechtigte Person). Danach:
+- Zertifikat «Developer ID Application» erstellen und als `.p12` exportieren → Secrets `APPLE_CERT_BASE64`
+  (Base64 der .p12), `APPLE_CERT_PASSWORD`, `APPLE_SIGNING_IDENTITY` (z.B. `Developer ID Application: wallee
+  Group AG (TEAMID)`), `APPLE_TEAM_ID`.
+- Für die Notarisierung ein App-spezifisches Passwort der Apple-ID → `APPLE_ID`, `APPLE_APP_PASSWORD`.
+- Repository-Variable `MACOS_SIGNING_ENABLED=true`. Der Workflow signiert das Bundle (`codesign --deep
+  --options runtime`), notarisiert es und **heftet das Ticket ans Bundle** (`stapler`), womit Gatekeeper auch
+  offline zufrieden ist. Ergebnis: einmaliger Dialog «aus dem Internet geladen — öffnen?», sonst nichts.
+
+**Windows — Code-Signing-Zertifikat.** Seit August 2024 behandelt Microsoft OV- und EV-Zertifikate bei
+SmartScreen gleich; ein EV-Zertifikat bringt keinen Vorteil mehr. Reputation baut sich nach der ersten
+signierten Version über Downloads auf, die Warnung verschwindet nach einigen Tagen und bleibt weg, solange
+dasselbe Zertifikat verwendet wird (Zertifikatswechsel können die Reputation zurücksetzen). Optionen:
+- **Azure Artifact Signing** (früher Trusted Signing): ca. 10 USD/Monat, keine Hardware-Token, Microsoft prüft
+  die Organisation. Verfügbar für Organisationen in USA, Kanada, EU und UK — ob eine Schweizer AG akzeptiert
+  wird, muss wallee prüfen (eine EU-Tochter würde den Weg öffnen). Der Workflow-Schritt müsste dann auf einen
+  Windows-Runner mit `azure/trusted-signing-action` umgestellt werden.
+- **OV-Zertifikat** (DigiCert, Sectigo, SSL.com; ca. 200–400 USD/Jahr). Seit 2023 muss der Schlüssel auf
+  Hardware oder in einem Cloud-HSM liegen; für den Workflow braucht es den Cloud-Signierdienst des Anbieters
+  (statt der heutigen PFX-Secrets `WINDOWS_CERT_BASE64`/`WINDOWS_CERT_PASSWORD`, die nur für exportierbare
+  Zertifikate passen).
 
 ## Update-Mechanismus (seit 1.1.0)
 
@@ -142,7 +179,7 @@ selbst ersetzen. Das ist die einzige Ausnahme von «der Helper ist dumm» und be
 | Endpunkt | Zweck |
 |---|---|
 | `GET /update/check` | `api.github.com/repos/<repo>/releases/latest` (1 h Cache), Vergleich mit der einkompilierten Version (SemVer); Antwort `{ current, latest, updateAvailable, assetName, assetSize, releaseUrl, notes }` |
-| `POST /update/start` `{ "tag": "v1.1.0" }` | Lädt das Asset für `GOOS/GOARCH` von `github.com/<repo>/releases/download/<tag>/`, prüft es gegen `SHA256SUMS.txt` desselben Releases, ersetzt die laufende Datei (Unix: atomares `rename`; Windows: alte Datei nach `.old`), startet neu auf demselben Port |
+| `POST /update/start` `{ "tag": "v1.1.0" }` | Lädt das Asset für die Plattform von `github.com/<repo>/releases/download/<tag>/`, prüft es gegen `SHA256SUMS.txt` desselben Releases, installiert und startet neu auf demselben Port. Windows: Exe ersetzen, alte Datei nach `.old`. macOS (seit 1.3.0): Zip neben das Bundle entpacken, **ganzes Bundle** tauschen (`.app` → `.app.old`), damit eine Signatur gültig bleibt; ohne Bundle (Entwicklung) nur das Binary. `.old` wird beim nächsten Start entfernt |
 | `GET /update/status` | `{ state: downloading\|verifying\|installing\|restarting\|error, received, total, message }` für die Statusleiste |
 | `GET /update/version` | Erkennung des Neustarts durch das Frontend |
 

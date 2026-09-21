@@ -484,5 +484,11 @@
   "setup.spaces.active": "active",
   "setup.spaces.cancelNew": "Cancel",
   "setup.label": "Label",
-  "setup.label.hint": "Shown in the top right; empty = the space name from wallee."
+  "setup.label.hint": "Shown in the top right; empty = the space name from wallee.",
+  "header.quit": "Quit",
+  "quit.confirmTitle": "Quit wallee Virtual Terminal?",
+  "quit.confirmMessage": "The program will stop. Double-click the program to start it again. Payments in progress are kept in wallee.",
+  "quit.failed": "Quitting failed. The program keeps running.",
+  "quit.doneTitle": "wallee Virtual Terminal has been stopped.",
+  "quit.doneText": "You can close this window. Double-click the program to start it again."
 }

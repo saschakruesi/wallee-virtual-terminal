@@ -5,6 +5,21 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+### Added
+- macOS: Auslieferung als «wallee Virtual Terminal.app» (Zip) mit Icon und Universal-Binary — ein Download für
+  Apple Silicon und Intel, kein `chmod` mehr nötig.
+- Windows: Icon und Versionsinfo in der Exe.
+- «Beenden» oben rechts im Header (mit Bestätigung), da das Programm kein Fenster mehr hat.
+- Ein zweiter Doppelklick auf das Programm öffnet nur den Browser der bereits laufenden Instanz.
+
+### Changed
+- Kein Konsolenfenster mehr auf beiden Systemen; das Programm läuft im Hintergrund bis «Beenden».
+- Self-Update auf dem Mac tauscht das ganze App-Bundle. **Mac-Nutzer von 1.2.0 und älter müssen das neue Zip
+  einmalig manuell herunterladen**; diese Versionen zeigen kein Update-Banner mehr, nur den Link «Auf neue
+  Version prüfen» in der Fusszeile.
+- Release-Workflow: Notarisierung heftet das Ticket ans Bundle (Stapling), sobald wallee die Apple-Secrets setzt.
+- README: Anleitung für den ersten Start auf macOS 15 und neuer («Trotzdem öffnen» in den Systemeinstellungen).
+
 ## [1.2.1] — 2026-09-21
 
 ### Added

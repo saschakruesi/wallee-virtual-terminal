@@ -549,3 +549,30 @@ body {
   background: var(--w-line);
   margin: 6px 4px;
 }
+
+/* «Beenden»: full-page end state after the helper has stopped. */
+.quit-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--s-2);
+  padding: 40px;
+  max-width: 560px;
+  margin: 0 auto;
+}
+.quit-screen img {
+  height: 22px;
+  width: auto;
+  margin-bottom: var(--s-4);
+}
+.quit-screen h1 {
+  font-size: 24px;
+  font-weight: 400;
+  margin: 0;
+}
+.quit-screen p {
+  margin: 0;
+  color: var(--w-text-muted);
+}

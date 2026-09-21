@@ -22,22 +22,31 @@ Kartendaten werden ausschliesslich auf der wallee-Zahlungsseite eingegeben — n
 ## Download & Start
 
 1. Laden Sie unter **Releases** die Datei für Ihr System herunter:
-   - macOS (Apple Silicon, M1 und neuer): `wallee-virtual-terminal-macos-apple-silicon`
-   - macOS (Intel): `wallee-virtual-terminal-macos-intel`
+   - macOS (Apple Silicon und Intel): `wallee-virtual-terminal-macos.zip`
    - Windows (64-bit): `wallee-virtual-terminal-windows.exe`
-2. Doppelklick auf die Datei. Ein kleines Textfenster öffnet sich (bitte offen lassen) und Ihr Browser zeigt
-   das Programm unter `http://127.0.0.1:7811`.
-3. Beim ersten Start richten Sie die Verbindung zu wallee ein (siehe unten).
+2. **macOS:** Doppelklick auf die Zip-Datei entpackt «wallee Virtual Terminal». Ziehen Sie das Programm nach
+   Belieben in den Ordner «Programme». **Windows:** Die Datei an einen beliebigen Ort legen, z.B. auf den Desktop.
+3. Doppelklick auf das Programm. Es öffnet sich kein Fenster, nur Ihr Browser mit dem Programm unter
+   `http://127.0.0.1:7811`. Läuft das Programm bereits, öffnet ein weiterer Doppelklick nur den Browser.
+4. Beim ersten Start richten Sie die Verbindung zu wallee ein (siehe unten).
 
 Das Programm braucht keine Installation und schreibt keine Dateien auf Ihren Computer; Ihre Einstellungen
-liegen im Browser. Zum Beenden schliessen Sie das Textfenster (oder drücken dort Ctrl+C).
+liegen im Browser. Es läuft im Hintergrund weiter, auch wenn Sie den Browser schliessen. **Beenden** Sie es
+über das Symbol oben rechts neben den Einstellungen; ein Neustart des Computers beendet es ebenfalls.
 
-**macOS meldet «kann nicht geöffnet werden»?** Rechtsklick auf die Datei → «Öffnen» → «Öffnen» bestätigen.
-Bei neueren macOS-Versionen: Systemeinstellungen → Datenschutz & Sicherheit → «Trotzdem öffnen».
-Falls die Datei nicht ausführbar ist: im Terminal `chmod +x wallee-virtual-terminal-macos-*` ausführen.
+**macOS meldet «kann nicht geöffnet werden» oder «Apple konnte nicht überprüfen …»?** Das Programm ist noch
+nicht bei Apple signiert. Einmalig beim ersten Start: Dialog mit «Fertig» schliessen, dann
+Systemeinstellungen → Datenschutz & Sicherheit → nach unten scrollen → **«Trotzdem öffnen»** → mit Passwort
+oder Touch ID bestätigen. Danach startet das Programm normal. (Rechtsklick → «Öffnen» funktioniert seit
+macOS 15 nicht mehr.)
 
-**Windows SmartScreen?** «Weitere Informationen» → «Trotzdem ausführen». Die Windows-Firewall fragt beim
-ersten Start eventuell nach — das Programm braucht nur ausgehende Verbindungen zu `app-wallee.com`.
+**Windows SmartScreen «Der Computer wurde geschützt»?** «Weitere Informationen» → «Trotzdem ausführen».
+Einmalig pro heruntergeladener Datei. Die Windows-Firewall fragt beim ersten Start eventuell nach — das
+Programm braucht nur ausgehende Verbindungen zu `app-wallee.com`.
+
+**Sie haben Version 1.2.0 oder älter auf dem Mac?** Diese Versionen können sich nicht selbst auf das neue
+Format aktualisieren und zeigen auch kein Update-Banner. Bitte einmalig die Zip-Datei herunterladen und die
+alte Datei löschen.
 
 ## Einrichtung in wallee (einmalig)
 
@@ -88,8 +97,8 @@ abgewähltem «Zugangsdaten merken» gelten sie nur bis zum Schliessen des Brows
 **Kann ich das Programm auf mehreren Computern nutzen?** Ja — auf jedem die Einrichtung wiederholen. Den
 Produktkatalog können Sie unter «Produkte» exportieren und auf dem anderen Gerät importieren (JSON oder CSV).
 
-**Es öffnet sich kein Browser.** Öffnen Sie manuell `http://127.0.0.1:7811` (oder den Port, der im
-Textfenster steht — ist 7811 belegt, nimmt das Programm den nächsten freien).
+**Es öffnet sich kein Browser.** Öffnen Sie manuell `http://127.0.0.1:7811`. Ist dieser Port durch ein anderes
+Programm belegt, nimmt das Programm den nächsten freien (7812, 7813, …).
 
 **Der Browser blockiert das Zahlungsfenster.** Das Programm zeigt dann einen Button «Zahlungsseite
 öffnen». Alternativ den Link kopieren und in einem neuen Tab öffnen.
@@ -102,7 +111,7 @@ bleiben in wallee erhalten und sind unter «Vorgänge» wieder sichtbar.
 «Jetzt abbuchen» schliesst die Zahlung ab; «Abbrechen» gibt die Reservation frei.
 
 **Neue Version?** Beim Start prüft das Programm, ob auf GitHub ein neueres Release vorliegt, und zeigt dann
-oben eine Leiste «Neue Version … verfügbar». Mit **«Update starten»** lädt es die neue Datei herunter, prüft
+oben eine Leiste «Neue Version … verfügbar». Mit **«Update starten»** lädt es die neue Version herunter, prüft
 die Prüfsumme, ersetzt sich selbst und startet neu; die Seite lädt automatisch neu, Ihre Einstellungen bleiben
 erhalten. Klappt das nicht (z.B. weil der Ordner schreibgeschützt ist), bleibt der Link «Manuell herunterladen».
 
@@ -117,8 +126,10 @@ cd web && npm ci && npm test && npm run build
 cd ../helper && make build && ./wallee-virtual-terminal
 ```
 
-Release: Tag `v1.2.3` pushen → GitHub Actions baut die drei Binaries, `SHA256SUMS.txt` und das Release.
-Code-Signing (Apple Developer ID / Windows-Zertifikat) läuft, sobald die entsprechenden Secrets gesetzt sind
-(`APPLE_*`, `WINDOWS_CERT_*`, Repository-Variable `MACOS_SIGNING_ENABLED=true`).
+Release: Tag `v1.2.3` pushen → GitHub Actions baut das macOS-App-Bundle (Universal, als Zip), die Windows-Exe
+(mit Icon, ohne Konsolenfenster), `SHA256SUMS.txt` und das Release. Lokal: `make release` in `helper/`.
+Code-Signing und Notarisierung laufen, sobald die entsprechenden Secrets gesetzt sind (`APPLE_*`,
+`WINDOWS_CERT_*`, Repository-Variable `MACOS_SIGNING_ENABLED=true`); was wallee dafür braucht, steht in
+`docs/01-architektur.md` unter «Signaturen».
 
 Lizenz: proprietär, © wallee Group AG.
