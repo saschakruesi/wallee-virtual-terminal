@@ -1,7 +1,8 @@
 # wallee Virtual Terminal — helper build
 #
 #   make build     copy ../web/dist → ./dist and build the binary for this machine
-#   make release   cross-compile darwin/arm64, darwin/amd64, windows/amd64 → ../dist/
+#   make release   build the macOS app bundle (universal, zipped) and the Windows exe → ../dist/
+#   make winres    regenerate the Windows resource object (icon, version info, manifest)
 #   make test      go vet + go test (needs ./dist, a placeholder is created if missing)
 #   make clean
 
@@ -42,11 +43,14 @@ test: placeholder-dist
 winres:
 	$(WINRES) make --in winres/winres.json --arch amd64 --product-version $(VERSION_PLAIN) --file-version $(VERSION_PLAIN)
 
+## Release assets: universal macOS app bundle (zip) + Windows GUI executable + checksums.
 release: copy-dist winres
-	rm -rf $(RELEASE_DIR) && mkdir -p $(RELEASE_DIR)
-	GOOS=darwin  GOARCH=arm64 go build $(GOFLAGS) -ldflags "$(LDFLAGS)" -o $(RELEASE_DIR)/$(BINARY)-macos-apple-silicon .
-	GOOS=darwin  GOARCH=amd64 go build $(GOFLAGS) -ldflags "$(LDFLAGS)" -o $(RELEASE_DIR)/$(BINARY)-macos-intel .
+	rm -rf $(RELEASE_DIR) && mkdir -p $(RELEASE_DIR)/tmp
+	GOOS=darwin  GOARCH=arm64 go build $(GOFLAGS) -ldflags "$(LDFLAGS)" -o $(RELEASE_DIR)/tmp/$(BINARY)-darwin-arm64 .
+	GOOS=darwin  GOARCH=amd64 go build $(GOFLAGS) -ldflags "$(LDFLAGS)" -o $(RELEASE_DIR)/tmp/$(BINARY)-darwin-amd64 .
 	GOOS=windows GOARCH=amd64 go build $(GOFLAGS) -ldflags "$(LDFLAGS) -H windowsgui" -o $(RELEASE_DIR)/$(BINARY)-windows.exe .
+	../scripts/make-bundle.sh $(RELEASE_DIR)/tmp/$(BINARY)-darwin-arm64 $(RELEASE_DIR)/tmp/$(BINARY)-darwin-amd64 $(VERSION_PLAIN) $(RELEASE_DIR)
+	rm -rf $(RELEASE_DIR)/tmp
 	cd $(RELEASE_DIR) && shasum -a 256 $(BINARY)-* > SHA256SUMS.txt
 	@ls -la $(RELEASE_DIR)
 
