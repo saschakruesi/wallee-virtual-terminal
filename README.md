@@ -35,10 +35,11 @@ liegen im Browser. Es läuft im Hintergrund weiter, auch wenn Sie den Browser sc
 über das Symbol oben rechts neben den Einstellungen; ein Neustart des Computers beendet es ebenfalls.
 
 **macOS meldet «kann nicht geöffnet werden» oder «Apple konnte nicht überprüfen …»?** Das Programm ist noch
-nicht bei Apple signiert. Einmalig beim ersten Start: Dialog mit «Fertig» schliessen, dann
-Systemeinstellungen → Datenschutz & Sicherheit → nach unten scrollen → **«Trotzdem öffnen»** → mit Passwort
-oder Touch ID bestätigen. Danach startet das Programm normal. (Rechtsklick → «Öffnen» funktioniert seit
-macOS 15 nicht mehr.)
+nicht bei Apple signiert; die Warnung ist einmalig pro Computer zu bestätigen. **Nicht «In den Papierkorb
+legen» klicken**, sondern «Fertig», dann Systemeinstellungen → Datenschutz & Sicherheit → nach unten scrollen
+→ **«Trotzdem öffnen»** → mit Passwort oder Touch ID bestätigen → «Öffnen». (Rechtsklick → «Öffnen»
+funktioniert seit macOS 15 nicht mehr.) Alle Schritte mit Bild, auch für ältere macOS-Versionen und Windows:
+**[INSTALLATION.md](INSTALLATION.md)**.
 
 **Windows SmartScreen «Der Computer wurde geschützt»?** «Weitere Informationen» → «Trotzdem ausführen».
 Einmalig pro heruntergeladener Datei. Die Windows-Firewall fragt beim ersten Start eventuell nach — das
