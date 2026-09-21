@@ -161,17 +161,13 @@ type updater struct {
 }
 
 func newUpdater(repo string, port int, allowedOrigins []string) *updater {
-	origins := make(map[string]bool, len(allowedOrigins))
-	for _, o := range allowedOrigins {
-		origins[strings.ToLower(o)] = true
-	}
 	return &updater{
 		repo:      repo,
 		apiBase:   githubAPIBase,
 		dlBase:    githubDownload,
 		client:    &http.Client{Timeout: 5 * time.Minute},
 		port:      port,
-		allowed:   origins,
+		allowed:   originSet(allowedOrigins),
 		restartFn: restartProcess,
 		status:    updateStatus{State: stateIdle, Current: version},
 	}

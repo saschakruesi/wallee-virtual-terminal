@@ -66,9 +66,11 @@ func main() {
 	}
 
 	allowedOrigins := []string{origin, fmt.Sprintf("http://localhost:%d", actualPort)}
+	quit := make(chan struct{}, 1)
 	mux := http.NewServeMux()
 	mux.Handle(proxyPrefix+"/", newProxy(upstream, upstreamPath, proxyPrefix, allowedOrigins))
 	newUpdater(updateRepo, actualPort, allowedOrigins).register(mux)
+	mux.HandleFunc("/quit", newQuitHandler(originSet(allowedOrigins), quit))
 	mux.Handle("/", newStaticHandler(distFS()))
 
 	server := &http.Server{
@@ -95,7 +97,10 @@ func main() {
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
-	<-stop
+	select {
+	case <-stop:
+	case <-quit: // «Beenden» in the UI
+	}
 	fmt.Println("\nBeenden … / Shutting down …")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
