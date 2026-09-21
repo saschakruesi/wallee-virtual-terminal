@@ -5,6 +5,10 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+### Changed
+- Neue Anleitung `INSTALLATION.md`: erster Start Schritt für Schritt, inklusive der macOS-Warnung «Apple
+  konnte nicht überprüfen …» (macOS 15 und älter), Windows SmartScreen und Terminal-Variante für IT.
+
 ## [1.3.0] — 2026-09-21
 
 ### Added
