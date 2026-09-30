@@ -5,6 +5,8 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+## [1.4.0] — 2026-09-30
+
 ### Added
 - Einrichtung: Statusfeld «Zahlungslink» pro Space. Fehlt ein aktiver Charge Flow, zeigt es eine Kurzanleitung
   mit direktem Link ins wallee-Portal und prüft bei der Rückkehr automatisch erneut («Zahlungslink bereit»).
