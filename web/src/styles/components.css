@@ -716,6 +716,56 @@ button.stepper__step:hover .stepper__circle {
   font-size: var(--fs-small);
 }
 
+/* ---------- Charge flow status (setup) ---------- */
+.flow-status {
+  border-radius: var(--r-sm);
+  padding: 12px var(--s-2);
+  color: var(--w-text);
+}
+.flow-status--ok {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--w-turquoise-20);
+}
+.flow-status--todo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  border: 1px solid var(--w-line);
+  background: var(--w-bg-soft);
+}
+.flow-status--todo p {
+  margin: 0;
+}
+.flow-status__title {
+  font-weight: 500;
+  color: var(--w-black);
+}
+.flow-status__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--w-turquoise);
+  color: var(--w-black);
+}
+.flow-status__steps {
+  list-style: decimal;
+  margin: 0;
+  padding-left: 1.4em;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.flow-status__steps a {
+  color: var(--w-black);
+  text-decoration: underline;
+}
+
 /* ---------- Choice cards (mode selection) ---------- */
 .choice-grid {
   display: grid;

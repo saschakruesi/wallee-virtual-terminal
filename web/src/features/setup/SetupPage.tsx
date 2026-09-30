@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { LANGS, useI18n } from '@/i18n'
@@ -27,6 +27,8 @@ import {
 import type { AppConfig, CompletionBehavior, Environment, PaymentLanguage } from '@/lib/storage'
 import { testConnection } from './connectionTest'
 import type { ConnectionResult } from './connectionTest'
+import { ChargeFlowStatus } from './ChargeFlowStatus'
+import type { ChargeFlowCheck } from './ChargeFlowStatus'
 import { describeApiError } from './errorMessages'
 import { CatalogTransfer } from '@/features/products/CatalogTransfer'
 
@@ -64,6 +66,20 @@ function formFromConfig(config: AppConfig | null, remember: boolean): Form {
   }
 }
 
+/** Last known charge flow state of a saved space, until it is checked again. */
+function storedFlowCheck(profile: AppConfig | null): ChargeFlowCheck | null {
+  if (!profile) return null
+  return profile.chargeFlowAvailable ? { status: 'ok' } : { status: 'missing' }
+}
+
+function flowCheckFromResult(res: ConnectionResult): ChargeFlowCheck {
+  if (res.activeChargeFlows === null)
+    return { status: 'forbidden', message: res.chargeFlowError?.message ?? '' }
+  return res.activeChargeFlows > 0
+    ? { status: 'ok', count: res.activeChargeFlows }
+    : { status: 'missing' }
+}
+
 /**
  * Setup: one form per space. Several spaces can be configured; the chips on top select
  * which one is edited, «Neuer Space» starts an empty form, and saving makes the space active.
@@ -73,7 +89,7 @@ export function SetupPage() {
   const toast = useToast()
   const navigate = useNavigate()
   const location = useLocation()
-  const { config, profiles, save, remove, clear } = useConfig()
+  const { config, profiles, save, update, remove, clear } = useConfig()
   const wantsNew = new URLSearchParams(location.search).get('new') === '1'
   const remember = config?.rememberCredentials ?? true
 
@@ -91,6 +107,7 @@ export function SetupPage() {
   const [testing, setTesting] = useState(false)
   const [result, setResult] = useState<ConnectionResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [flowCheck, setFlowCheck] = useState<ChargeFlowCheck | null>(() => storedFlowCheck(editing))
   const [confirmLive, setConfirmLive] = useState(false)
   const [confirmClear, setConfirmClear] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState(false)
@@ -112,7 +129,33 @@ export function SetupPage() {
     setErrors({})
     setResult(null)
     setError(null)
+    setFlowCheck(
+      storedFlowCheck(editingId ? (profiles.find((p) => p.id === editingId) ?? null) : null),
+    )
   }
+
+  const flowCreds = useMemo(
+    () =>
+      editing?.authKey
+        ? {
+            userId: editing.userId,
+            authKey: editing.authKey,
+            spaceId: editing.spaceId,
+            iatUnit: editing.iatUnit,
+          }
+        : null,
+    [editing],
+  )
+
+  const onFlowCheck = useCallback(
+    (next: ChargeFlowCheck) => {
+      setFlowCheck(next)
+      // Only the active space is patched here; any other space is updated when it is saved.
+      if (editingId && editingId === config?.id)
+        update({ chargeFlowAvailable: next.status === 'ok' })
+    },
+    [editingId, config?.id, update],
+  )
 
   useEffect(() => {
     if (!editing) userIdRef.current?.focus()
@@ -200,6 +243,7 @@ export function SetupPage() {
       setKeyMasked(true)
       setShowKey(false)
       setResult(res)
+      setFlowCheck(flowCheckFromResult(res))
       toast.success(
         t('setup.savedMessage', { space: res.space.name ?? res.space.id }),
         t('setup.saved'),
@@ -494,26 +538,15 @@ export function SetupPage() {
                   </dd>
                   <dt>{t('setup.result.state')}</dt>
                   <dd>{spaceStateLabel(result.space.state)}</dd>
-                  <dt>{t('setup.result.chargeFlows')}</dt>
-                  <dd>
-                    {result.activeChargeFlows === null
-                      ? t('setup.result.chargeFlows.forbidden', {
-                          message: result.chargeFlowError?.message ?? '',
-                        })
-                      : result.activeChargeFlows > 0
-                        ? t('setup.result.chargeFlows.available', {
-                            count: result.activeChargeFlows,
-                          })
-                        : t('setup.result.chargeFlows.unavailable')}
-                    {result.activeChargeFlows === 0 && (
-                      <div className="small muted">{t('setup.result.chargeFlows.hint')}</div>
-                    )}
-                  </dd>
                 </dl>
                 {result.iatUnit === 'milliseconds' && (
                   <div className="small muted">{t('setup.result.iatHint')}</div>
                 )}
               </div>
+            )}
+
+            {flowCreds && flowCheck && (
+              <ChargeFlowStatus creds={flowCreds} check={flowCheck} onChange={onFlowCheck} />
             )}
 
             <Button type="submit" size="lg" block loading={testing}>
