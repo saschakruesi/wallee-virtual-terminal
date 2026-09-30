@@ -20,6 +20,11 @@ export function countActiveChargeFlows(flows: ChargeFlow[]): number {
   return flows.filter((f) => f.state === 'ACTIVE').length
 }
 
+/** Charge flow list of a space in the wallee portal (the API cannot create flows). */
+export function chargeFlowPortalUrl(spaceId: string): string {
+  return `https://app-wallee.com/s/${encodeURIComponent(spaceId)}/payment/flow/list`
+}
+
 /* ---------- Payment link (charge flow on a transaction), docs/02-wallee-api.md §3 ---------- */
 
 export type ChargeFlowLevelState = 'PENDING' | 'FAILED' | 'SUCCESSFUL'

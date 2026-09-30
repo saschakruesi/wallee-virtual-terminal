@@ -5,6 +5,10 @@ Versionierung nach [SemVer](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+### Added
+- Einrichtung: Statusfeld «Zahlungslink» pro Space. Fehlt ein aktiver Charge Flow, zeigt es eine Kurzanleitung
+  mit direktem Link ins wallee-Portal und prüft bei der Rückkehr automatisch erneut («Zahlungslink bereit»).
+
 ### Changed
 - Neue Anleitung `INSTALLATION.md`: erster Start Schritt für Schritt, inklusive der macOS-Warnung «Apple
   konnte nicht überprüfen …» (macOS 15 und älter), Windows SmartScreen und Terminal-Variante für IT.

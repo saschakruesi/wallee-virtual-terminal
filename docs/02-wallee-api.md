@@ -66,8 +66,10 @@ request<T>(method, path, { query?, body?, expand? }): Promise<T>
 | Charge-Flow-Levels einer Konfiguration | `GET /payment/charge-flows/levels/search?query=...` |
 
 Verbindungstest = `GET /spaces/{id}` erfolgreich → Space-Name anzeigen. Danach `GET /payment/charge-flows`;
-ohne aktiven Charge Flow wird der Zahlungslink-Modus in der UI mit Hinweis deaktiviert («Im Space unter
-Settings → Payment → Charge Flows einen Flow mit Level E-Mail einrichten»).
+ohne aktiven Charge Flow wird der Zahlungslink-Modus in der UI deaktiviert, und die Einrichtung zeigt eine
+Kurzanleitung mit Link auf `https://app-wallee.com/s/{spaceId}/payment/flow/list`. Die API (v2.0 wie v1) hat
+**keinen Schreib-Endpunkt für Charge Flows** — sie lassen sich nur im Portal anlegen. Die Einrichtung prüft
+erneut per «Erneut prüfen» und automatisch, sobald das Fenster wieder den Fokus erhält.
 
 ### Transaktion erstellen (beide Modi)
 
